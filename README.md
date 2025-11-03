@@ -55,6 +55,15 @@ pnpm dev
 3. 获取测试 USDC：[Amoy Faucet](https://faucet.circle.com/)
 4. 在页面上点击"连接钱包"
 
+### 演示路径（Grid E2E）
+
+1. 打开 [http://localhost:3000/grid](http://localhost:3000/grid)
+2. 在“事件查询”中输入 Polymarket 事件 slug（例如 `will-trump-win-2024`），点击“查询”
+3. 在市场列表中选择 YES/NO 方向，确认订单簿实时数据正常刷新
+4. 调整网格配置区间、步长、预算等参数，查看实时计算的层数与预算占比
+5. 点击“保存配置”后，使用“启动策略”触发 worker，`策略状态` 卡片会显示心跳与计划
+6. 测试下单按钮可使用当前 tokenID 向 CLOB 发送测试市价单（需持有 API Key）
+
 ## 📁 项目结构
 
 ```

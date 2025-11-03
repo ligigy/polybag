@@ -1,92 +1,44 @@
-// Polymarket CLOB adapter skeleton
-// NOTE: This is a scaffold. It defines the adapter interface and a basic class
-// with unimplemented methods that will be filled in during implementation.
+// Polymarket CLOB adapter：封装 SDK 并输出统一类型
+import {
+  Balance,
+  BookLevel,
+  Market,
+  MarketStatus,
+  Order,
+  OrderStatus,
+  OrderBook,
+  OrderType,
+  Outcome,
+  PlaceOrderRequest,
+  TradeEvent,
+  TradeSide,
+} from "./types";
 
-export type Outcome = "YES" | "NO";
-export type TradeSide = "BUY" | "SELL";
-export type OrderType = "GTC" | "GTD" | "FAK" | "FOK";
+export type AdapterInitConfig = {
+  apiUrl?: string;
+  wsUrl?: string;
+  apiKey?: string;
+  secret?: string;
+  passphrase?: string;
+  chainId?: number;
+  privateKey?: string;
+  rpcUrl?: string;
+};
 
-export interface Market {
-  id: string;
-  slug?: string;
-  question?: string;
-  status?: string;
-  conditionId?: string;
-  tokenIdYes?: string;
-  tokenIdNo?: string;
-  tickSize: number;
-  feeBps: number;
-}
-
-export interface BookLevel {
-  price: number;
-  size: number;
-  count?: number;
-}
-export interface OrderBook {
-  marketId: string;
-  bids: BookLevel[];
-  asks: BookLevel[];
-  ts: number;
-}
-
-export interface PlaceOrderRequest {
-  marketId?: string;
-  outcome?: Outcome;
-  tokenID?: string;
-  side: TradeSide;
-  price?: number;
-  size?: number;
-  amount?: number;
-  orderType?: OrderType;
-  postOnly?: boolean;
-  reduceOnly?: boolean;
-  expiration?: number;
-  idempotencyKey?: string;
-  clientOrderId?: string;
-}
-
-export type OrderStatus =
-  | "OPEN"
-  | "PARTIAL"
-  | "FILLED"
-  | "CANCELLED"
-  | "REJECTED";
-export interface Order {
-  id: string;
-  clientOrderId?: string;
-  marketId: string;
-  outcome: Outcome;
-  side: TradeSide;
-  price: number;
-  size: number;
-  filled: number;
-  status: OrderStatus;
-  orderType: OrderType;
-  tokenID?: string;
-  expiration?: number;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface Balance {
-  usdc: number;
-  allowance?: number;
-  outcomeYes?: number;
-  outcomeNo?: number;
-}
+export type ResolvedAdapterConfig = {
+  apiUrl: string;
+  wsUrl: string;
+  apiKey: string;
+  secret: string;
+  passphrase: string;
+  chainId: number;
+  privateKey: string;
+  rpcUrl: string;
+};
 
 export interface ClobClientAdapter {
-  init(cfg?: {
-    apiUrl?: string;
-    wsUrl?: string;
-    apiKey?: string;
-    secret?: string;
-    passphrase?: string;
-    chainId?: number;
-    privateKey?: string;
-    rpcUrl?: string;
-  }): Promise<void>;
+  init(cfg?: AdapterInitConfig): Promise<void>;
+  getConfig(): ResolvedAdapterConfig;
   listMarkets(): Promise<Market[]>;
   getOrderBook(tokenID: string): Promise<OrderBook>;
   createOrder(
@@ -103,20 +55,18 @@ export interface ClobClientAdapter {
   getTrades(
     filter: { market?: string; asset_id?: string; maker_address?: string },
     firstPageOnly?: boolean
-  ): Promise<any[]>;
+  ): Promise<TradeEvent[]>;
   getPricesHistory(filter: any): Promise<any>;
-  getBalanceAllowance(): Promise<Balance>;
+  getBalance(): Promise<Balance>;
 }
 
 export class PolymarketClobAdapter implements ClobClientAdapter {
   private initialized = false;
-  private cfg:
-    | Required<NonNullable<Parameters<PolymarketClobAdapter["init"]>[0]>>
-    | undefined;
+  private cfg: ResolvedAdapterConfig | undefined;
   private roClient: any | null = null; // read-only ClobClient (no wallet)
   private rwClient: any | null = null; // read-write ClobClient (wallet + creds)
 
-  async init(cfg = {}): Promise<void> {
+  async init(cfg: AdapterInitConfig = {}): Promise<void> {
     // Store config; real implementation will instantiate ClobClient here
     this.cfg = {
       apiUrl:
@@ -131,8 +81,13 @@ export class PolymarketClobAdapter implements ClobClientAdapter {
       chainId: cfg.chainId ?? Number(process.env.CHAIN_ID ?? 137),
       privateKey: cfg.privateKey ?? process.env.WALLET_PRIVATE_KEY ?? "",
       rpcUrl: cfg.rpcUrl ?? process.env.POLYGON_RPC_URL ?? "",
-    } as any;
+    } satisfies ResolvedAdapterConfig;
     this.initialized = true;
+  }
+
+  getConfig(): ResolvedAdapterConfig {
+    this.ensureInit();
+    return { ...this.cfg! };
   }
 
   private ensureInit() {
@@ -191,58 +146,51 @@ export class PolymarketClobAdapter implements ClobClientAdapter {
 
   async listMarkets(): Promise<Market[]> {
     const client = await this.getReadOnlyClient();
-    // Prefer simplified markets for lighter payload
-    const resp = await client.getMarkets?.();
+    let resp: any =
+      (typeof client.getSimplifiedMarkets === "function"
+        ? await client.getSimplifiedMarkets()
+        : null) ?? null;
 
-    if (!resp) return [];
-    // Unwrap paginated shape { data, next_cursor, limit, count }
-    const list: any[] = Array.isArray(resp)
-      ? resp
-      : Array.isArray(resp.data)
-      ? resp.data
-      : [];
-    // Best-effort mapping; field names depend on SDK/version
-    return list.map((m: any) => ({
-      id:
-        m.id ||
-        m.market ||
-        m.condition_id ||
-        m.conditionId ||
-        m.slug ||
-        String(m.token_id || m.tokenId || ""),
-      slug: m.slug,
-      question: m.question || m.title,
-      status: m.status,
-      conditionId: m.condition_id || m.conditionId,
-      tokenIdYes: m.yesTokenId || m.yes_token_id || m.token_id_yes,
-      tokenIdNo: m.noTokenId || m.no_token_id || m.token_id_no,
-      tickSize: Number(
-        m.tickSize ||
-          m.tick_size ||
-          m.tick_size_str ||
-          m.tick ||
-          m.tick_size_decimal ||
-          0.01
-      ),
-      feeBps: Number(m.feeBps || m.fee_bps || m.fee || 0),
-    }));
+    if (!resp || this.unwrapList(resp).length === 0) {
+      resp =
+        (typeof client.getMarkets === "function"
+          ? await client.getMarkets()
+          : null) ?? [];
+    }
+
+    const list = this.unwrapList(resp);
+    return list
+      .map((raw) => this.mapMarket(raw))
+      .filter((m): m is Market => !!m);
   }
 
   async getOrderBook(tokenID: string): Promise<OrderBook> {
     const client = await this.getReadOnlyClient();
     const ob = await client.getOrderBook(tokenID);
     // Normalize orderbook into bids/asks arrays of {price,size}
-    const mapSide = (side: any[]) =>
+    const mapSide = (side: any[]): BookLevel[] =>
       (Array.isArray(side) ? side : []).map((lv: any) => ({
         price: Number(lv.price ?? lv[0] ?? 0),
         size: Number(lv.size ?? lv[1] ?? 0),
         count: Number(lv.count ?? lv[2] ?? 1),
       }));
+    const bids = mapSide(ob.bids || ob.buy || ob.bid || []);
+    const asks = mapSide(ob.asks || ob.sell || ob.ask || []);
+    const bestBid = bids[0]?.price;
+    const bestAsk = asks[0]?.price;
     return {
       marketId: tokenID,
-      bids: mapSide(ob.bids || ob.buy || ob.bid || []),
-      asks: mapSide(ob.asks || ob.sell || ob.ask || []),
+      bids,
+      asks,
       ts: Date.now(),
+      mid:
+        typeof bestBid === "number" && typeof bestAsk === "number"
+          ? (bestBid + bestAsk) / 2
+          : undefined,
+      spread:
+        typeof bestBid === "number" && typeof bestAsk === "number"
+          ? bestAsk - bestBid
+          : undefined,
     };
   }
   async createOrder(
@@ -323,16 +271,17 @@ export class PolymarketClobAdapter implements ClobClientAdapter {
   async getTrades(
     filter: { market?: string; asset_id?: string; maker_address?: string },
     firstPageOnly?: boolean
-  ): Promise<any[]> {
+  ): Promise<TradeEvent[]> {
     const client = await this.getWriteClient();
     const resp = await client.getTrades(filter, !!firstPageOnly);
-    return Array.isArray(resp?.data || resp) ? resp.data || resp : [];
+    const list = this.unwrapList(resp);
+    return list.map((t) => this.mapTrade(t));
   }
   async getPricesHistory(filter: any): Promise<any> {
     const client = await this.getWriteClient();
     return client.getPricesHistory(filter);
   }
-  async getBalanceAllowance(): Promise<Balance> {
+  async getBalance(): Promise<Balance> {
     const client = await this.getWriteClient();
     let AssetType: any;
     try {
@@ -384,6 +333,109 @@ export class PolymarketClobAdapter implements ClobClientAdapter {
       createdAt: Number(o.createdAt || Date.now()),
       updatedAt: Number(o.updatedAt || Date.now()),
     };
+  }
+
+  private mapTrade(t: any): TradeEvent {
+    return {
+      tradeId: t.tradeId || t.trade_id || t.id || undefined,
+      orderId: String(t.orderId || t.order_id || t.orderID || t.fill_id || ""),
+      price: this.toNumber(t.price ?? t.execution_price ?? t.avg_price, 0),
+      size: this.toNumber(t.size ?? t.qty ?? t.quantity ?? t.amount, 0),
+      liquidity: t.liquidity
+        ? String(t.liquidity).toUpperCase() === "MAKER"
+          ? "MAKER"
+          : "TAKER"
+        : undefined,
+      feePaid:
+        t.fee != null || t.feePaid != null
+          ? this.toNumber(t.fee ?? t.feePaid, 0)
+          : undefined,
+      ts: Number(t.ts || t.timestamp || t.time || Date.now()),
+    };
+  }
+
+  private unwrapList(payload: any): any[] {
+    if (Array.isArray(payload)) return payload;
+    if (payload?.data && Array.isArray(payload.data)) return payload.data;
+    if (Array.isArray(payload?.results)) return payload.results;
+    return [];
+  }
+
+  private mapMarket(raw: any): Market | null {
+    if (!raw) return null;
+    const idCandidate =
+      raw.id ||
+      raw.market ||
+      raw.market_id ||
+      raw.marketId ||
+      raw.condition_id ||
+      raw.conditionId ||
+      raw.slug ||
+      raw.token_id ||
+      raw.tokenId;
+    if (!idCandidate) return null;
+    const tokenIdYes =
+      raw.yesTokenId ||
+      raw.yes_token_id ||
+      raw.token_id_yes ||
+      raw.tokenYesId ||
+      raw.yes_token;
+    const tokenIdNo =
+      raw.noTokenId ||
+      raw.no_token_id ||
+      raw.token_id_no ||
+      raw.tokenNoId ||
+      raw.no_token;
+    const outcomes: Outcome[] = [];
+    if (tokenIdYes) outcomes.push("YES");
+    if (tokenIdNo) outcomes.push("NO");
+    if (outcomes.length === 0) outcomes.push("YES", "NO");
+    return {
+      id: String(idCandidate),
+      slug: raw.slug ?? raw.marketSlug ?? undefined,
+      question: raw.question || raw.title || raw.name,
+      outcomes,
+      tickSize: this.toNumber(
+        raw.tickSize ??
+          raw.tick_size ??
+          raw.tick_size_str ??
+          raw.tick ??
+          raw.tick_size_decimal,
+        0.01
+      ),
+      minPrice: this.maybeNumber(raw.minPrice ?? raw.min_price),
+      maxPrice: this.maybeNumber(raw.maxPrice ?? raw.max_price),
+      minSize: this.maybeNumber(
+        raw.minSize ?? raw.min_size ?? raw.min_trade_size
+      ),
+      feeBps: this.toNumber(raw.feeBps ?? raw.fee_bps ?? raw.fee, 0),
+      status: this.mapMarketStatus(
+        raw.status ?? raw.marketStatus ?? raw.state ?? "TRADING"
+      ),
+      clobSymbol: raw.symbol || raw.clobSymbol || raw.ticker,
+      conditionId: raw.condition_id || raw.conditionId,
+      tokenIdYes: tokenIdYes ? String(tokenIdYes) : undefined,
+      tokenIdNo: tokenIdNo ? String(tokenIdNo) : undefined,
+    };
+  }
+
+  private toNumber(value: any, fallback: number): number {
+    if (value == null) return fallback;
+    const v = typeof value === "string" ? Number(value) : value;
+    return Number.isFinite(v) ? Number(v) : fallback;
+  }
+
+  private maybeNumber(value: any): number | undefined {
+    const parsed = this.toNumber(value, Number.NaN);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  private mapMarketStatus(value: any): MarketStatus {
+    const normalized = String(value || "TRADING").toUpperCase();
+    if (normalized === "SETTLING" || normalized === "CLOSED") {
+      return normalized as MarketStatus;
+    }
+    return "TRADING";
   }
 }
 

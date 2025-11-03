@@ -7,7 +7,7 @@ import { WagmiProvider, createConfig, http } from 'wagmi';
 import { polygon, polygonAmoy } from 'viem/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit';
-import { ToastProvider } from '@/app/components/ui/toast';
+import { ToastProvider } from '@/components/ui/toast';
 import React from 'react';
 
 const config = getDefaultConfig({

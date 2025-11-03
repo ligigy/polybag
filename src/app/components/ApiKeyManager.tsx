@@ -1,32 +1,17 @@
 "use client";
 import React from "react";
-import { Button } from "@/app/components/ui/button";
-import { useToast } from "@/app/components/ui/toast";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
+import {
+  exportStoredApiKey,
+  getStoredApiKey,
+  hasStoredApiKey,
+  importStoredApiKey,
+  setStoredApiKey,
+  type ApiKeyCreds,
+} from "@/lib/storage/apiKeyStore";
+import { ensureTypedDataCompatibility } from "@/lib/wallet/signTypedData";
 import { useAccount } from "wagmi";
-
-type ApiCreds = { key: string; secret: string; passphrase: string };
-
-const STORAGE_KEY = "polymarket_apikey_session";
-
-function saveCreds(creds: ApiCreds | null) {
-  if (typeof window === "undefined") return;
-  if (!creds) {
-    sessionStorage.removeItem(STORAGE_KEY);
-  } else {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(creds));
-  }
-}
-
-function loadCreds(): ApiCreds | null {
-  if (typeof window === "undefined") return null;
-  const v = sessionStorage.getItem(STORAGE_KEY);
-  if (!v) return null;
-  try {
-    return JSON.parse(v) as ApiCreds;
-  } catch {
-    return null;
-  }
-}
 
 function Masked({ value }: { value: string }) {
   const [show, setShow] = React.useState(false);
@@ -54,11 +39,11 @@ export default function ApiKeyManager() {
   );
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [creds, setCreds] = React.useState<ApiCreds | null>(null);
+  const [creds, setCreds] = React.useState<ApiKeyCreds | null>(null);
   const [keysList, setKeysList] = React.useState<any[] | null>(null);
 
   React.useEffect(() => {
-    setCreds(loadCreds());
+    setCreds(getStoredApiKey());
   }, []);
 
   async function deriveKey() {
@@ -78,14 +63,7 @@ export default function ApiKeyManager() {
       const provider = new BrowserProvider(eth);
       const signerV6 = await provider.getSigner();
       // ethers v6 没有 _signTypedData，clob-client 期望 v5 接口；做一层适配
-      const signer: any = signerV6 as any;
-      if (
-        typeof signer._signTypedData !== "function" &&
-        typeof signer.signTypedData === "function"
-      ) {
-        signer._signTypedData = (domain: any, types: any, value: any) =>
-          signer.signTypedData(domain, types, value);
-      }
+      const signer: any = ensureTypedDataCompatibility(signerV6 as any);
       const client = new ClobClient(apiUrl, chain, signer);
       const resp = await client.createOrDeriveApiKey();
       if (!resp?.key || !resp?.secret || !resp?.passphrase)
@@ -96,7 +74,7 @@ export default function ApiKeyManager() {
         passphrase: String(resp.passphrase),
       };
       setCreds(newCreds);
-      saveCreds(newCreds);
+      setStoredApiKey(newCreds);
       notify("API Key 派生成功");
     } catch (e: any) {
       setError(e?.message || "派生失败");
@@ -122,14 +100,7 @@ export default function ApiKeyManager() {
       if (!eth) throw new Error("未检测到浏览器钱包");
       const provider = new BrowserProvider(eth);
       const signerV6 = await provider.getSigner();
-      const signer: any = signerV6 as any;
-      if (
-        typeof signer._signTypedData !== "function" &&
-        typeof signer.signTypedData === "function"
-      ) {
-        signer._signTypedData = (domain: any, types: any, value: any) =>
-          signer.signTypedData(domain, types, value);
-      }
+      const signer: any = ensureTypedDataCompatibility(signerV6 as any);
       const client = new ClobClient(apiUrl, chain, signer, creds);
       const resp = await client.getApiKeys();
       setKeysList(resp?.data || resp || []);
@@ -157,19 +128,12 @@ export default function ApiKeyManager() {
       const eth: any = (window as any).ethereum;
       const provider = new BrowserProvider(eth);
       const signerV6 = await provider.getSigner();
-      const signer: any = signerV6 as any;
-      if (
-        typeof signer._signTypedData !== "function" &&
-        typeof signer.signTypedData === "function"
-      ) {
-        signer._signTypedData = (domain: any, types: any, value: any) =>
-          signer.signTypedData(domain, types, value);
-      }
+      const signer: any = ensureTypedDataCompatibility(signerV6 as any);
       const client = new ClobClient(apiUrl, chain, signer, creds);
       await client.deleteApiKey();
       // clear local
       setCreds(null);
-      saveCreds(null);
+      setStoredApiKey(null);
       setKeysList(null);
       notify("已吊销当前 Key 并清除本地");
     } catch (e: any) {
@@ -195,14 +159,7 @@ export default function ApiKeyManager() {
       const eth: any = (window as any).ethereum;
       const provider = new BrowserProvider(eth);
       const signerV6 = await provider.getSigner();
-      const signer: any = signerV6 as any;
-      if (
-        typeof signer._signTypedData !== "function" &&
-        typeof signer.signTypedData === "function"
-      ) {
-        signer._signTypedData = (domain: any, types: any, value: any) =>
-          signer.signTypedData(domain, types, value);
-      }
+      const signer: any = ensureTypedDataCompatibility(signerV6 as any);
       const client = new ClobClient(apiUrl, chain, signer, creds);
       const resp = await client.getBuilderApiKeys?.();
       setKeysList(resp?.data || resp || []);
@@ -229,14 +186,7 @@ export default function ApiKeyManager() {
       const eth: any = (window as any).ethereum;
       const provider = new BrowserProvider(eth);
       const signerV6 = await provider.getSigner();
-      const signer: any = signerV6 as any;
-      if (
-        typeof signer._signTypedData !== "function" &&
-        typeof signer.signTypedData === "function"
-      ) {
-        signer._signTypedData = (domain: any, types: any, value: any) =>
-          signer.signTypedData(domain, types, value);
-      }
+      const signer: any = ensureTypedDataCompatibility(signerV6 as any);
       const client = new ClobClient(apiUrl, chain, signer, creds);
       await client.revokeBuilderApiKeys?.();
       setKeysList(null);
@@ -251,7 +201,9 @@ export default function ApiKeyManager() {
 
   function exportCurrent() {
     if (!creds) return;
-    const blob = new Blob([JSON.stringify(creds)], {
+    const serialized = exportStoredApiKey();
+    if (!serialized) return;
+    const blob = new Blob([serialized], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
@@ -266,15 +218,10 @@ export default function ApiKeyManager() {
     const text = prompt("粘贴从备份文件复制的 JSON：");
     if (!text) return;
     try {
-      const obj = JSON.parse(text);
-      if (obj?.key && obj?.secret && obj?.passphrase) {
-        setCreds(obj);
-        saveCreds(obj);
-      } else {
-        alert("无效的备份内容");
-      }
-    } catch {
-      alert("解析失败");
+      const imported = importStoredApiKey(text);
+      setCreds(imported);
+    } catch (err) {
+      alert((err as Error)?.message || "解析失败");
     }
   }
 
@@ -355,7 +302,7 @@ export default function ApiKeyManager() {
           variant="outline"
           onClick={() => {
             setCreds(null);
-            saveCreds(null);
+            setStoredApiKey(null);
           }}
         >
           仅从本设备清除

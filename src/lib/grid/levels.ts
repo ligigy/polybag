@@ -9,7 +9,7 @@ export function buildGridLevels(cfg: GridConfig): DesiredGrid {
   const levels: GridLevel[] = [];
   let p = round(priceMin, step);
   while (p <= priceMax + 1e-9) {
-    levels.push({ price: round(p, step), targetQty: sizePerLevel });
+    levels.push({ price: round(p, step), targetQty: sizePerLevel, openOrderIds: [] });
     p += step;
   }
   return { levels, totalQty: levels.reduce((a, b) => a + b.targetQty, 0) };
@@ -19,4 +19,3 @@ function round(v: number, step: number) {
   const n = Math.round(v / step);
   return Number((n * step).toFixed(6));
 }
-

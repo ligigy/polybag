@@ -100,7 +100,7 @@ export default function WalletConnectButton(){ return <ConnectButton /> }
 ```
 
 ## 使用 shadcn/ui 的建议
-- 将表单与按钮替换为 `@/app/components/ui` 下的组件（如 Button/Input/Select/Card/Table/Dialog/Toast）。
+- 将表单与按钮替换为 `@/components/ui` 下的组件（如 Button/Input/Select/Card/Table/Dialog/Toast）。
 - 封装通用的 `Form` 与 `Dialog` 以统一验证与模态交互。
 - 配置 Tailwind 暗色模式与主题变量，满足交易面板的对比度需求。
 - 前端页面：提供参数表单与状态面板（后续迭代）

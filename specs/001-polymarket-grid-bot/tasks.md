@@ -64,21 +64,21 @@
 
 - [x] API Key 备份与恢复：导出 JSON、从文本导入（会话保存）。
 
-- [ ] T001 创建项目目录结构，按 plan.md 的 Project Structure 落地：`src/app`、`src/lib`、`src/services`、`src/worker`、`tests` 目录- [x] 首页模块化：在 `HomeDashboard` 嵌入 API Key 管理与账户状态；保留 `/apikey` 作为可选入口。
+- [X] T001 创建项目目录结构，按 plan.md 的 Project Structure 落地：`src/app`、`src/lib`、`src/services`、`src/worker`、`tests` 目录- [x] 首页模块化：在 `HomeDashboard` 嵌入 API Key 管理与账户状态；保留 `/apikey` 作为可选入口。
 
-- [ ] T002 [P] 初始化 Next.js 16 配置：更新 `tsconfig.json`、`next.config.ts`、`package.json`（engines + scripts）- [x] 修复 ethers v6 与 clob-client 签名兼容：为 signer 补充 `_signTypedData` 适配。
+- [X] T002 [P] 初始化 Next.js 16 配置：更新 `tsconfig.json`、`next.config.ts`、`package.json`（engines + scripts）- [x] 修复 ethers v6 与 clob-client 签名兼容：为 signer 补充 `_signTypedData` 适配。
 
-- [ ] T003 [P] 安装核心依赖：`@polymarket/clob-client`、`ethers@v6`、`@rainbow-me/rainbowkit`、`wagmi`、`viem`、`@tanstack/react-query`- [x] Toast 反馈：派生/获取/吊销操作成功失败提示；链 ID 不一致提示并禁用关键操作。
+- [X] T003 [P] 安装核心依赖：`@polymarket/clob-client`、`ethers@v6`、`@rainbow-me/rainbowkit`、`wagmi`、`viem`、`@tanstack/react-query`- [x] Toast 反馈：派生/获取/吊销操作成功失败提示；链 ID 不一致提示并禁用关键操作。
 
-- [ ] T004 [P] 安装 UI 与测试依赖：`shadcn/ui`、`tailwindcss`、`class-variance-authority`、`vitest`、`@testing-library/react`- [ ] （可选）后端 `/api/auth/derive` 中继：代理 SDK 调用，不持久化返回值，不打敏感日志；仅在 CORS 受限时启用。
+- [X] T004 [P] 安装 UI 与测试依赖：`shadcn/ui`、`tailwindcss`、`class-variance-authority`、`vitest`、`@testing-library/react`- [ ] （可选）后端 `/api/auth/derive` 中继：代理 SDK 调用，不持久化返回值，不打敏感日志；仅在 CORS 受限时启用。
 
-- [ ] T005 初始化 shadcn/ui：运行 `npx shadcn-cli@latest init -d`，配置 Tailwind + React；在 `src/components/ui/` 生成基础组件
+- [X] T005 初始化 shadcn/ui：运行 `npx shadcn-cli@latest init -d`，配置 Tailwind + React；在 `src/components/ui/` 生成基础组件
 
-- [ ] T006 [P] 创建环境变量模板：`.env.example`（`NEXT_PUBLIC_CHAIN_ID`、`NEXT_PUBLIC_WS_URL`、`NEXT_PUBLIC_CLOB_API_URL` 等）### 网格引擎与 Worker
+- [X] T006 [P] 创建环境变量模板：`.env.example`（`NEXT_PUBLIC_CHAIN_ID`、`NEXT_PUBLIC_WS_URL`、`NEXT_PUBLIC_CLOB_API_URL` 等）### 网格引擎与 Worker
 
-- [ ] T007 创建 README 与快速开始文档：`README.md` 包含本地开发、钱包连接、Amoy 测试网配置步骤- [ ] `lib/grid`：构建网格层级（[min,max,step]）、每层目标数量、订单映射；事件驱动补挂；库存与预算约束。
+- [X] T007 创建 README 与快速开始文档：`README.md` 包含本地开发、钱包连接、Amoy 测试网配置步骤- [ ] `lib/grid`：构建网格层级（[min,max,step]）、每层目标数量、订单映射；事件驱动补挂；库存与预算约束。
 
-- [ ] T008 [P] 配置 Git hooks 与 CI/CD 占位：`.husky/pre-commit`、`.github/workflows/test.yml` 骨架- [ ] 幂等与重试：下单/撤单重试策略、`idempotencyKey/clientOrderId` 使用规范。
+- [X] T008 [P] 配置 Git hooks 与 CI/CD 占位：`.husky/pre-commit`、`.github/workflows/test.yml` 骨架- [ ] 幂等与重试：下单/撤单重试策略、`idempotencyKey/clientOrderId` 使用规范。
 
 - [ ] 状态持久化：文件存储 `data/state/*.json`；原子写入与版本控制；恢复流程。
 
@@ -100,25 +100,25 @@
 
 - [ ] 市场选取（/grid 落地真实逻辑）：
 
-- [ ] T009 创建 `services/polymarket/types.ts`：定义 `Market`、`Order`、`GridConfig`、`Balance`、`TradeEvent` 等 TypeScript 类型 - [ ] 使用 `listMarkets/getSimplifiedMarkets` 真实拉取市场列表，展示人类可读字段（question/slug），并显示 `tickSize`、方向（YES/NO）可用性。
+- [X] T009 创建 `services/polymarket/types.ts`：定义 `Market`、`Order`、`GridConfig`、`Balance`、`TradeEvent` 等 TypeScript 类型 - [ ] 使用 `listMarkets/getSimplifiedMarkets` 真实拉取市场列表，展示人类可读字段（question/slug），并显示 `tickSize`、方向（YES/NO）可用性。
 
-- [ ] T010 [P] 创建 `services/polymarket/clob-adapter.ts` 骨架：导入 `ClobClient`，定义 adapter class 和接口方法签名 - [ ] 选择市场后，基于 `tokenIdYes/tokenIdNo` 计算 `tokenID`（YES/NO）；无则通过合并 Data-API 或兼容字段补齐。
+- [X] T010 [P] 创建 `services/polymarket/clob-adapter.ts` 骨架：导入 `ClobClient`，定义 adapter class 和接口方法签名 - [ ] 选择市场后，基于 `tokenIdYes/tokenIdNo` 计算 `tokenID`（YES/NO）；无则通过合并 Data-API 或兼容字段补齐。
 
-- [ ] T011 [US1] 实现 `getMarkets()` 方法：调用 SDK 的 `getMarkets()`，返回映射到内部 `Market[]` 类型，包含 `tokenIdYes/tokenIdNo/conditionId/tickSize` - [ ] 增加搜索/过滤（关键字、状态=TRADING/SETTLING）、分页或“加载更多”（若 SDK 支持 sampling 接口）。
+- [X] T011 [US1] 实现 `getMarkets()` 方法：调用 SDK 的 `getMarkets()`，返回映射到内部 `Market[]` 类型，包含 `tokenIdYes/tokenIdNo/conditionId/tickSize` - [ ] 增加搜索/过滤（关键字、状态=TRADING/SETTLING）、分页或“加载更多”（若 SDK 支持 sampling 接口）。
 
-- [ ] T012 [US1] 实现 `getOrderBook(tokenID)` 方法：调用 SDK，返回 bids/asks/timestamp，支持增量订阅检测 - [ ] 选中状态持久化到 URL（`?marketId=...&outcome=YES|NO`），刷新不丢失；加载时根据 URL 反选中。
+- [X] T012 [US1] 实现 `getOrderBook(tokenID)` 方法：调用 SDK，返回 bids/asks/timestamp，支持增量订阅检测 - [ ] 选中状态持久化到 URL（`?marketId=...&outcome=YES|NO`），刷新不丢失；加载时根据 URL 反选中。
 
-- [ ] T013 [P] [US1] 实现 `createOrder()` 和 `postOrder()` 方法：支持 GTC/GTD，GTD 需验证过期时间 ≥ now + 10s - [ ] 使用 shadcn Skeleton 在加载/切换时展示骨架屏；Toast 告警网络错误或空列表。
+- [X] T013 [P] [US1] 实现 `createOrder()` 和 `postOrder()` 方法：支持 GTC/GTD，GTD 需验证过期时间 ≥ now + 10s - [ ] 使用 shadcn Skeleton 在加载/切换时展示骨架屏；Toast 告警网络错误或空列表。
 
-- [ ] T014 [P] [US1] 实现 `cancelOrder()` 和 `cancelAll()` 方法：处理部分成交与撤单失败重试 - [ ] 成功选取后，`OrderBookView` 使用选中 `tokenID` 自动订阅 WS→SSE，`GridConfigForm` 预填 `tickSize` 并校验步长。
+- [X] T014 [P] [US1] 实现 `cancelOrder()` 和 `cancelAll()` 方法：处理部分成交与撤单失败重试 - [ ] 成功选取后，`OrderBookView` 使用选中 `tokenID` 自动订阅 WS→SSE，`GridConfigForm` 预填 `tickSize` 并校验步长。
 
-- [ ] T015 [US1] 实现 `getOpenOrders(market?)` 方法：查询未成交订单，返回订单 ID 列表与详情
+- [X] T015 [US1] 实现 `getOpenOrders(market?)` 方法：查询未成交订单，返回订单 ID 列表与详情
 
-- [ ] T016 [US1] 实现 `getTrades(market?)` 方法：查询历史成交，用于 PnL 计算与成交监听补挂### 市场获取逻辑（基于 slug 的事件模式）
+- [X] T016 [US1] 实现 `getTrades(market?)` 方法：查询历史成交，用于 PnL 计算与成交监听补挂### 市场获取逻辑（基于 slug 的事件模式）
 
-- [ ] T017 [P] [US1] 实现 `getBalance()` 方法：返回 USDC/YES/NO 余额与 Allowance 状态- [ ] 读取 `polymarket-docs/fetching-markets-guide.md` 与 `polymarket-docs/event-example.json`，采用“通过指定 slug 获取 event → 基于 eventId 获取 markets”的流程。
+- [X] T017 [P] [US1] 实现 `getBalance()` 方法：返回 USDC/YES/NO 余额与 Allowance 状态- [ ] 读取 `polymarket-docs/fetching-markets-guide.md` 与 `polymarket-docs/event-example.json`，采用“通过指定 slug 获取 event → 基于 eventId 获取 markets”的流程。
 
-- [ ] T018 [P] 实现 `getPricesHistory(tokenID, interval, limit)` 方法：支持 OHLCV 数据用于回测（T3 使用）- 后端（拆分路由，遵循单一职责）
+- [X] T018 [P] 实现 `getPricesHistory(tokenID, interval, limit)` 方法：支持 OHLCV 数据用于回测（T3 使用）- 后端（拆分路由，遵循单一职责）
 
   - [ ] 新增 `GET /api/event?slug={slug}`：调用 Gamma API `GET /events/slug/{slug}`，返回 event 原始结构（不统一改写）。
 
@@ -126,13 +126,13 @@
 
 - [ ] 出错返回 200 + `error` 字段，不抛 5xx，便于前端处理。
 
-- [ ] T019 创建 `services/polymarket/ws-client.ts` 骨架：导入 ws 库或原生 WebSocket，定义订阅类- 前端（/grid 重构为 EventViewer）
+- [X] T019 创建 `services/polymarket/ws-client.ts` 骨架：导入 ws 库或原生 WebSocket，定义订阅类- 前端（/grid 重构为 EventViewer）
 
-- [ ] T020 [P] 实现 market feed 订阅：订阅 `/ws/market`，处理 `type/markets/assets_ids/initial_dump` 消息，聚合更新 - [ ] 初始不获取列表；用户在顶部输入 slug（shadcn/Input），点击“查询”或回车后：
+- [X] T020 [P] 实现 market feed 订阅：订阅 `/ws/market`，处理 `type/markets/assets_ids/initial_dump` 消息，聚合更新 - [ ] 初始不获取列表；用户在顶部输入 slug（shadcn/Input），点击“查询”或回车后：
 
-- [ ] T021 [P] 实现用户 feed 订阅（可选 P1）：订阅 `/ws/user`，需 API auth，心跳 PING 每 50s，处理断线重连 - [ ] 请求 `/api/event?slug=...` 展示 event 详情（名称、描述、resolution、标签等）。
+- [X] T021 [P] 实现用户 feed 订阅（可选 P1）：订阅 `/ws/user`，需 API auth，心跳 PING 每 50s，处理断线重连 - [ ] 请求 `/api/event?slug=...` 展示 event 详情（名称、描述、resolution、标签等）。
 
-- [ ] T022 实现心跳与重连机制：指数退避、max 30s 间隔、手动断开支持；连接状态事件抛出 - [ ] 请求 `/api/markets?eventId={event.id}&closed=false` 展示该 event 下“有效 markets”（不再限制前 20 条）。
+- [X] T022 实现心跳与重连机制：指数退避、max 30s 间隔、手动断开支持；连接状态事件抛出 - [ ] 请求 `/api/markets?eventId={event.id}&closed=false` 展示该 event 下“有效 markets”（不再限制前 20 条）。
 
   - [ ] 去掉下拉菜单，直接平铺展示 markets 列表，每个 market 卡片包含 question/conditionId/YES/NO token/tickSize/status 等。
 
@@ -140,23 +140,23 @@
 
     - [ ] 在页面下方显示该 market 详情 block。
 
-- [ ] T023 创建 `services/polymarket/account.ts`：定义 `AccountSnapshot`、`AccountStream` 接口 - [ ] 订单簿订阅使用该 market 的 `tokenID`（YES/NO），URL 持久化 `?slug=...&marketId=...&outcome=...`。
+- [X] T023 创建 `services/polymarket/account.ts`：定义 `AccountSnapshot`、`AccountStream` 接口 - [ ] 订单簿订阅使用该 market 的 `tokenID`（YES/NO），URL 持久化 `?slug=...&marketId=...&outcome=...`。
 
-- [ ] T024 [P] 实现 `getAccountSnapshot(address)` 方法：聚合 balance/allowance/openOrders/recentTrades 返回快照 - [ ] 完善 Skeleton 加载、Toast 错误提示、空态占位，保持 shadcn/ui 统一风格。
+- [X] T024 [P] 实现 `getAccountSnapshot(address)` 方法：聚合 balance/allowance/openOrders/recentTrades 返回快照 - [ ] 完善 Skeleton 加载、Toast 错误提示、空态占位，保持 shadcn/ui 统一风格。
 
-- [ ] T025 [P] 实现 `watchAccount(address)` 方法：将 WS user feed + 轮询聚合，返回流式增量事件（balance/order/trade）- [ ] Allowance 检查：`AllowanceChecklist` 组件 + `/api/account/snapshot` 检查项（余额/Allowance/头寸）。
+- [X] T025 [P] 实现 `watchAccount(address)` 方法：将 WS user feed + 轮询聚合，返回流式增量事件（balance/order/trade）- [ ] Allowance 检查：`AllowanceChecklist` 组件 + `/api/account/snapshot` 检查项（余额/Allowance/头寸）。
 
-- [ ] T026 实现 `getAccountHealth()` 方法：检查 API Key 有效性、WS 连接、系统时钟与 chain 的偏移、限流状态- [ ] 账户面板中显示 API Key 状态（是否存在、创建时间、快速吊销）。
+- [X] T026 实现 `getAccountHealth()` 方法：检查 API Key 有效性、WS 连接、系统时钟与 chain 的偏移、限流状态- [ ] 账户面板中显示 API Key 状态（是否存在、创建时间、快速吊销）。
 
 ### Frontend Integration Prep### 校验与演示
 
-- [ ] 最小演示路径：连接钱包 → 选择市场与方向 → 设置区间/步长/每格数量/预算 → 启动策略 → 订单簿/状态可视化 → 成交后自动补挂。
+- [X] 最小演示路径：连接钱包 → 选择市场与方向 → 设置区间/步长/每格数量/预算 → 启动策略 → 订单簿/状态可视化 → 成交后自动补挂。
 
-- [ ] T027 [P] 创建 `app/providers.tsx`：集成 RainbowKit（WalletConnect）、wagmi 与 viem Provider、React Query 客户端
+- [X] T027 [P] 创建 `app/providers.tsx`：集成 RainbowKit（WalletConnect）、wagmi 与 viem Provider、React Query 客户端
 
-- [ ] T028 配置 wagmi hooks：`useAccount`、`useNetwork`、`useSigner`、`useContractRead`；支持 Polygon Mainnet (137) 与 Amoy (80002)## Phase 3 — Risk & Monitoring（P2）
+- [X] T028 配置 wagmi hooks：`useAccount`、`useNetwork`、`useSigner`、`useContractRead`；支持 Polygon Mainnet (137) 与 Amoy (80002)## Phase 3 — Risk & Monitoring（P2）
 
-- [ ] T029 创建 `app/layout.tsx` 包装器：Provider 嵌套、全局样式、导航骨架- [ ] 风控规则：最大占用/最大头寸/当日亏损阈值/止损止盈/冷却；策略内统一校验并处置（撤单/停机）。
+- [X] T029 创建 `app/layout.tsx` 包装器：Provider 嵌套、全局样式、导航骨架- [ ] 风控规则：最大占用/最大头寸/当日亏损阈值/止损止盈/冷却；策略内统一校验并处置（撤单/停机）。
 
 - [ ] 监控指标：PnL（含费率与滑点影响）、占用、订单失败率、补挂延迟；统一日志格式与导出。
 
@@ -178,7 +178,7 @@
 
 - [ ] 故障演练：WS 断线/限流/时钟偏移/拒单爆炸/余额不足；恢复演练与自动退避。
 
-- [ ] T030 [US1] 创建 `app/components/ApiKeyManager.tsx`：前端派生 API Key 组件- [ ] 数据存储升级：可选 SQLite/Prisma；增加简单查询与归档。
+- [X] T030 [US1] 创建 `app/components/ApiKeyManager.tsx`：前端派生 API Key 组件- [ ] 数据存储升级：可选 SQLite/Prisma；增加简单查询与归档。
 
   - 展示：API Key 列表（时间戳、标记）、派生/导入/吊销/复制/下载备份按钮- [ ] 多市场并行与限额隔离；资源与速率预算；进程/容器化部署脚本。
 
@@ -186,83 +186,83 @@
 
   - Toast 反馈：派生成功/失败、吊销确认、Chain ID 不匹配检查## Definition of Done（阶段性交付）
 
-- [ ] T031 实现 API Key 的 sessionStorage 管理：`lib/storage/apiKeyStore.ts`（存、取、删、查）- P1：可在 Amoy 上以小额参数完成一轮完整网格交易闭环；前端可监听市场、配置参数并查看状态；账户检查通过。
+- [X] T031 实现 API Key 的 sessionStorage 管理：`lib/storage/apiKeyStore.ts`（存、取、删、查）- P1：可在 Amoy 上以小额参数完成一轮完整网格交易闭环；前端可监听市场、配置参数并查看状态；账户检查通过。
 
-- [ ] T032 集成 ethers v6 签名兼容性：为 wagmi signer 补充 `_signTypedData` 适配器（clob-client 需要）- P2：风控命中 100% 生效；监控指标完整；账户 SSE/健康检查稳定运行。
+- [X] T032 集成 ethers v6 签名兼容性：为 wagmi signer 补充 `_signTypedData` 适配器（clob-client 需要）- P2：风控命中 100% 生效；监控指标完整；账户 SSE/健康检查稳定运行。
 
-- [ ] T033 [P] 实现可选的后端 `/api/auth/derive` 无持久化代理路由（CORS 受限时备选）- P3：回测/纸面交易可生成报告并导入实盘；主要边界条件与告警到位。
+- [X] T033 [P] 实现可选的后端 `/api/auth/derive` 无持久化代理路由（CORS 受限时备选）- P3：回测/纸面交易可生成报告并导入实盘；主要边界条件与告警到位。
 
 ### Market Selection & Event Discovery
 
-- [ ] T034 [US1] 创建 `app/components/EventSearchBar.tsx`：用户输入 slug，查询 `/api/event?slug=...` 获取 event 详情
-- [ ] T035 [US1] 创建 `app/api/event` 路由：代理调用 Gamma API `GET /events/slug/{slug}`，返回 event 原始结构（eventId、name、description 等）
-- [ ] T036 [US1] 创建 `app/components/MarketList.tsx`：展示 event 下的市场列表，每项显示 question/conditionId/YES/NO token/tickSize/status
-- [ ] T037 [US1] 创建 `app/api/markets` 路由：
+- [X] T034 [US1] 创建 `app/components/EventSearchBar.tsx`：用户输入 slug，查询 `/api/event?slug=...` 获取 event 详情
+- [X] T035 [US1] 创建 `app/api/event` 路由：代理调用 Gamma API `GET /events/slug/{slug}`，返回 event 原始结构（eventId、name、description 等）
+- [X] T036 [US1] 创建 `app/components/MarketList.tsx`：展示 event 下的市场列表，每项显示 question/conditionId/YES/NO token/tickSize/status
+- [X] T037 [US1] 创建 `app/api/markets` 路由：
   - Query params: `eventId`、`closed=false`（可选）、`limit`（分页）
   - 调用 Gamma API `GET /markets?order=eventId&closed=false`（直接返回原始分页结构）
   - 对 data 做"有效市场"过滤（存在 YES/NO token、未关闭等）
   - 返回格式：`{ data: Market[], next_cursor?: string, limit, count }`
   - 出错返回 200 + `{ error: "..." }`
-- [ ] T038 [US1] 创建市场选择状态管理：URL 持久化 `?slug=...&marketId=...&outcome=YES|NO`
-- [ ] T039 [US1] 创建 `app/components/MarketDetails.tsx`：选中后显示市场详情（question、tickSize、token IDs、CLOB 信息）
+- [X] T038 [US1] 创建市场选择状态管理：URL 持久化 `?slug=...&marketId=...&outcome=YES|NO`
+- [X] T039 [US1] 创建 `app/components/MarketDetails.tsx`：选中后显示市场详情（question、tickSize、token IDs、CLOB 信息）
 
 ### Order Book Visualization
 
-- [ ] T040 [P] [US1] 创建 `app/api/markets/stream` SSE 路由：
+- [X] T040 [P] [US1] 创建 `app/api/markets/stream` SSE 路由：
   - 聚合 WS market feed（assets_ids 对应选中 tokenID）
   - 解析 `type: "market"` 消息，提取 bids/asks/ts
   - 以 SSE `event: orderbook` 流式推送，payload: `{ bids, asks, ts, tokenID }`
-- [ ] T041 [US1] 创建 `app/components/OrderBookView.tsx`：
+- [X] T041 [US1] 创建 `app/components/OrderBookView.tsx`：
   - 消费 SSE `/api/markets/stream`（配合选中 tokenID）
   - 渲染 5-10 层 bids/asks，使用 shadcn Table 或简单 div 网格
   - 中间显示 mid-price；右侧显示网格配置的参考价格（若已配置）
   - 自动滚动最新数据
-- [ ] T042 实现 Skeleton 加载态与错误降级：SSE 连接失败 Toast，自动重连
+- [X] T042 实现 Skeleton 加载态与错误降级：SSE 连接失败 Toast，自动重连
 
 ### Grid Configuration & Strategy Launch
 
-- [ ] T043 [US1] 创建 `app/components/GridConfigForm.tsx`：
+- [X] T043 [US1] 创建 `app/components/GridConfigForm.tsx`：
   - 输入字段：价格下界 (lower)、价格上界 (upper)、网格步长 (step)、每格数量 (size)、总预算 (budget)、超时 (TTL)
   - 自动计算：网格层数、单层成本、总成本占预算比例
   - shadcn 组件：Input (价格/数量/预算)、Select (TTL)、Button (校验/启动)、Alert (超额提示)
   - 校验：step ≤ (upper - lower)、size _ layers _ price ≤ budget 等
   - 显示"批准启动"确认弹窗（明确金额与风险提示）
-- [ ] T044 [US1] 创建 `app/api/strategy/[id]/config` POST 路由：
+- [X] T044 [US1] 创建 `app/api/strategy/[id]/config` POST 路由：
   - 接收：marketId、outcome (YES/NO)、gridConfig、apiKey (from sessionStorage)
   - 验证：预算 ≤ 账户余额、预算 ≤ 预批准限额（暂为 ∞）
   - 保存配置到 `data/state/{marketId}_${outcome}.json`
   - 返回 strategy ID、初始状态
-- [ ] T045 [US1] 创建后端 `worker/gridRunner.ts` 初版：
+- [X] T045 [US1] 创建后端 `worker/gridRunner.ts` 初版：
   - 输入：marketId、outcome、gridConfig、apiKey、strategy ID
   - 逻辑：计算网格层 → 调用 `postOrders()` 初始布网 → 开始事件监听循环
   - 事件循环：监听 getTrades() 增量 → 检测成交 → 自动补挂
   - 持久化：每步更新 `data/state/{strategyId}.json`（订单映射、资金占用、统计）
   - 错误处理：下单失败重试、部分成交补挂、余额不足停机告警
-- [ ] T046 [US1] 创建 `app/api/strategy/[id]/status` GET 路由：
+- [X] T046 [US1] 创建 `app/api/strategy/[id]/status` GET 路由：
   - 返回：当前网格层状态、成交统计、资金占用、PnL（含费率影响）、运行时间
   - 数据源：从 worker 持久化的 state 文件读取
-- [ ] T047 [P] [US1] 创建 `lib/grid/gridEngine.ts`：
+- [X] T047 [P] [US1] 创建 `lib/grid/gridEngine.ts`：
   - `calculateLayers(lower, upper, step)` → `Layer[]` (price, targetSize, currentOrders)
   - `generateIdempotencyKey(marketId, outcome, price)` → 幂等键用于重试
   - `reconcileOrders(currentOrders, targetLayers)` → 应创建/应撤销的订单列表
 
 ### Account Status & Allowance Checklist
 
-- [ ] T048 [US1] 创建 `app/components/AllowanceChecklist.tsx`：
+- [X] T048 [US1] 创建 `app/components/AllowanceChecklist.tsx`：
   - 检查项：USDC 余额 ≥ 配置预算、USDC allowance (CTF) ≥ 预算、CTF approval for Exchange
   - 调用 `/api/account/snapshot` 获取最新状态
   - UI：shadcn Checkbox 列表，失败项红色、成功项绿色，失败项显示"Approve"按钮
   - 点击"Approve"：打开 wagmi `useContractWrite` 发起链上交易，等待确认
-- [ ] T049 [US1] 创建 `app/components/AccountStatusPanel.tsx`：显示 USDC/YES/NO 余额、Allowance、开放单数、最近成交、API Key 状态、WS 连接状态
-- [ ] T050 [US1] 创建 `app/api/account/snapshot` GET 路由：返回 `AccountSnapshot`（balance/allowance/openOrders/recentTrades/apiKeyStatus）
+- [X] T049 [US1] 创建 `app/components/AccountStatusPanel.tsx`：显示 USDC/YES/NO 余额、Allowance、开放单数、最近成交、API Key 状态、WS 连接状态
+- [X] T050 [US1] 创建 `app/api/account/snapshot` GET 路由：返回 `AccountSnapshot`（balance/allowance/openOrders/recentTrades/apiKeyStatus）
 
 ### Main Grid Page & Integration
 
-- [ ] T051 [US1] 创建 `app/grid/page.tsx` 主页面：
+- [X] T051 [US1] 创建 `app/grid/page.tsx` 主页面：
   - 布局：上方钱包连接 (RainbowKit)、中上 Event 搜索与市场选择、中 OrderBook 实时展示、下 GridConfigForm、右侧 AccountStatusPanel + AllowanceChecklist
   - 流程：连接钱包 → 搜索 slug → 选择市场 → 查看订单簿 → 配置参数 → 批准并启动 → 监控运行状态
   - 使用 shadcn Layout（Card、Tabs）整洁排版
-- [ ] T052 [US1] 实现完整的 E2E 演示路径（本地测试步骤）：
+- [X] T052 [US1] 实现完整的 E2E 演示路径（本地测试步骤）：
   - 连接钱包（MetaMask/Amoy）
   - 选择市场（例如 "Will Trump win?" YES）
   - 设置小预算网格（例如 0.01-0.02 USDC，5 层）

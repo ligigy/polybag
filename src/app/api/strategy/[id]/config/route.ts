@@ -16,6 +16,8 @@ export interface GridConfig {
   refillMode: 'ALWAYS' | 'ON_FILL' | 'NEVER';
   risk?: Record<string, unknown>;
   mode?: 'LIVE' | 'PAPER' | 'BACKTEST';
+  tokenID?: string;
+  ttlSeconds?: number;
 }
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
@@ -34,8 +36,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const c = body.config;
   if (!c.marketId || !c.outcome) return new Response(JSON.stringify({ error: 'marketId/outcome required' }), { status: 400 });
   if (!(c.priceMax > c.priceMin) || !(c.step > 0)) return new Response(JSON.stringify({ error: 'invalid range/step' }), { status: 400 });
+  if (c.orderType === 'GTD' && (!c.ttlSeconds || c.ttlSeconds < 10)) {
+    return new Response(JSON.stringify({ error: 'ttlSeconds must be >= 10 for GTD' }), { status: 400 });
+  }
 
   await writeJson(`strategies/${id}/config.json`, c);
   return Response.json({ ok: true, id });
 }
-

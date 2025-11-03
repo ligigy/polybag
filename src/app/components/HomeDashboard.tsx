@@ -9,8 +9,8 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/app/components/ui/card";
-import { Button } from "@/app/components/ui/button";
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function HomeDashboard() {
   return (

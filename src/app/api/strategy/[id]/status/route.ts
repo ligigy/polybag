@@ -1,10 +1,27 @@
-import { NextRequest } from 'next/server';
-import { readJson } from '@/lib/persistence/fsState';
+import { NextRequest } from "next/server";
+import { readJson } from "@/lib/persistence/fsState";
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const id = params.id;
-  const running = await readJson<boolean>(`strategies/${id}/running.json`, false);
-  const lastHeartbeat = await readJson<number>(`strategies/${id}/lastHeartbeat.json`, 0);
-  return Response.json({ id, running, lastHeartbeat, updatedAt: Date.now() });
-}
+  const running = await readJson<boolean>(
+    `strategies/${id}/running.json`,
+    false
+  );
+  const state = await readJson<any>(`strategies/${id}/state.json`, null);
+  const plan = await readJson<any>(`strategies/${id}/plan.json`, null);
+  const desired = await readJson<any>(`strategies/${id}/desired.json`, []);
+  const config = await readJson<any>(`strategies/${id}/config.json`, null);
 
+  return Response.json({
+    id,
+    running,
+    state,
+    plan,
+    desired,
+    config,
+    updatedAt: Date.now(),
+  });
+}

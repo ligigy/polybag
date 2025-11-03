@@ -5,28 +5,32 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/app/components/ui/card";
-import { Button } from "@/app/components/ui/button";
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  API_KEY_CHANGED_EVENT,
+  hasStoredApiKey,
+} from "@/lib/storage/apiKeyStore";
 
 type Snapshot = {
-  usdc: number;
-  allowanceUsdcToExchange?: number;
-  openOrders?: number;
+  balance: {
+    usdc: number;
+    allowance?: number;
+    outcomeYes?: number;
+    outcomeNo?: number;
+  };
+  openOrders: { id: string; status: string }[];
   lastUpdated: number;
 };
-
-type ApiCreds = { key: string; secret: string; passphrase: string };
-const STORAGE_KEY = "polymarket_apikey_session";
 
 function useApiKeyPresence() {
   const [hasKey, setHasKey] = React.useState<boolean>(false);
   React.useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
-      setHasKey(!!raw);
-    } catch {
-      setHasKey(false);
-    }
+    setHasKey(hasStoredApiKey());
+    if (typeof window === "undefined") return;
+    const handler = () => setHasKey(hasStoredApiKey());
+    window.addEventListener(API_KEY_CHANGED_EVENT, handler);
+    return () => window.removeEventListener(API_KEY_CHANGED_EVENT, handler);
   }, []);
   return hasKey;
 }
@@ -41,7 +45,12 @@ export default function AccountStatusPanel() {
     fetch("/api/account/snapshot")
       .then((r) => r.json())
       .then((d) => {
-        if (alive) setSnap(d);
+        if (!alive) return;
+        if (d?.error) {
+          setErr(d.error);
+          return;
+        }
+        setSnap(d);
       })
       .catch((e) => {
         if (alive) setErr(e?.message || "加载失败");
@@ -64,15 +73,15 @@ export default function AccountStatusPanel() {
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="flex items-center justify-between">
             <span>USDC 余额</span>
-            <span>{snap?.usdc ?? "-"}</span>
+            <span>{snap?.balance?.usdc ?? "-"}</span>
           </div>
           <div className="flex items-center justify-between">
             <span>USDC Allowance</span>
-            <span>{snap?.allowanceUsdcToExchange ?? "-"}</span>
+            <span>{snap?.balance?.allowance ?? "-"}</span>
           </div>
           <div className="flex items-center justify-between">
             <span>开放订单数</span>
-            <span>{snap?.openOrders ?? "-"}</span>
+            <span>{snap?.openOrders?.length ?? "-"}</span>
           </div>
           <div className="flex items-center justify-between">
             <span>API Key</span>

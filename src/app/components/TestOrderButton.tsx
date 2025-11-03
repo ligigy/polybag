@@ -1,8 +1,10 @@
 "use client";
 import React from "react";
-import { Button } from "@/app/components/ui/button";
-import { Input } from "@/app/components/ui/input";
-import { useToast } from "@/app/components/ui/toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
+import { getStoredApiKey } from "@/lib/storage/apiKeyStore";
+import { ensureTypedDataCompatibility } from "@/lib/wallet/signTypedData";
 
 export default function TestOrderButton({
   tokenID,
@@ -18,9 +20,8 @@ export default function TestOrderButton({
   async function placeTestOrder() {
     setBusy(true);
     try {
-      const credsRaw = sessionStorage.getItem("polymarket_apikey_session");
-      if (!credsRaw) throw new Error("未找到会话 API Key，请先在首页派生");
-      const creds = JSON.parse(credsRaw);
+      const creds = getStoredApiKey();
+      if (!creds) throw new Error("未找到会话 API Key，请先在首页派生");
       const apiUrl =
         process.env.NEXT_PUBLIC_CLOB_API_URL || "https://clob.polymarket.com";
       const chain = Number(
@@ -34,14 +35,7 @@ export default function TestOrderButton({
       if (!eth) throw new Error("未检测到浏览器钱包");
       const provider = new BrowserProvider(eth);
       const signerV6 = await provider.getSigner();
-      const signer: any = signerV6 as any;
-      if (
-        typeof signer._signTypedData !== "function" &&
-        typeof signer.signTypedData === "function"
-      ) {
-        signer._signTypedData = (domain: any, types: any, value: any) =>
-          signer.signTypedData(domain, types, value);
-      }
+      const signer: any = ensureTypedDataCompatibility(signerV6 as any);
       const client = new ClobClient(apiUrl, chain, signer, creds);
       const order = await client.createMarketOrder({
         tokenID,

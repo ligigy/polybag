@@ -1,8 +1,6 @@
 // Polymarket message normalization utilities
 // 原子化：仅负责将可能多形态的 WS/REST 数据，归一到本项目使用的订单簿结构
-
-export type BookLevel = { price: number; size: number; count?: number };
-export type OrderBook = { marketId: string; bids: BookLevel[]; asks: BookLevel[]; ts: number; mid?: number; spread?: number };
+import { BookLevel, OrderBook } from "./types";
 
 function toNumber(n: any, def = 0) {
   const v = typeof n === 'string' ? Number(n) : n;

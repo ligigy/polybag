@@ -12,6 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "clob-client-main/**",
+    "node_modules/**",
+    "dist/**",
+    "coverage/**",
+    "*.min.js",
+    ".vscode/**",
+    ".idea/**",
+    ".DS_Store",
   ]),
 ]);
 
