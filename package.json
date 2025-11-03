@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "ui:install": "bash scripts/shadcn-auto-add.sh"
+    "lint": "eslint"
   },
   "dependencies": {
     "@polymarket/clob-client": "^4.22.8",
