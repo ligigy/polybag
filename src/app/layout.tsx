@@ -22,7 +22,6 @@ export const metadata: Metadata = {
 const navLinks = [
   { href: "/", label: "Dashboard" },
   { href: "/grid", label: "Grid 策略" },
-  { href: "/apikey", label: "API Key" },
 ];
 
 export default function RootLayout({

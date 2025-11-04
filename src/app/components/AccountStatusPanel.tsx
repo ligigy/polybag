@@ -64,9 +64,6 @@ export default function AccountStatusPanel() {
     <Card className="w-full">
       <CardHeader className="flex items-center justify-between">
         <CardTitle className="font-medium">账户状态</CardTitle>
-        <Button asChild variant="link">
-          <a href="/apikey">管理 API Key</a>
-        </Button>
       </CardHeader>
       <CardContent>
         {err && <div className="text-sm text-red-600">{err}</div>}

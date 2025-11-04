@@ -64,20 +64,20 @@ export default function MarketList({
               <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                 {m.status && <Badge variant="outline">{m.status}</Badge>}
                 {m.tickSize != null && <span>tickSize: {m.tickSize}</span>}
-                {m.conditionId && (
+                {/* {m.conditionId && (
                   <span>
                     conditionId: <code>{m.conditionId}</code>
                   </span>
-                )}
+                )} */}
               </div>
             </CardHeader>
             <CardContent className="space-y-2 text-xs text-zinc-600">
-              <div>
+              {/* <div>
                 YES Token: <code className="break-all">{m.yesTokenId || "-"}</code>
               </div>
               <div>
                 NO Token: <code className="break-all">{m.noTokenId || "-"}</code>
-              </div>
+              </div> */}
               <div className="flex items-center gap-2 pt-2">
                 <Button
                   size="sm"

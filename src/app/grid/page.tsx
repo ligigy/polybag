@@ -13,6 +13,8 @@ import GridConfigForm from "@/app/components/GridConfigForm";
 import AccountStatusPanel from "@/app/components/AccountStatusPanel";
 import StrategyStatusPanel from "@/app/components/StrategyStatusPanel";
 import AllowanceChecklist from "@/app/components/AllowanceChecklist";
+import HealthCheckDashboard from "@/app/components/HealthCheckDashboard";
+import RiskEventTimeline from "@/app/components/RiskEventTimeline";
 import TestOrderButton from "@/app/components/TestOrderButton";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -68,7 +70,6 @@ export default function GridPage() {
     outcome: Outcome;
   }>({ market: null, outcome: "YES" });
   const [loadingEvent, setLoadingEvent] = React.useState(false);
-  const [loadingMarkets, setLoadingMarkets] = React.useState(false);
 
   const tokenID = selected.market
     ? selected.outcome === "YES"
@@ -79,9 +80,10 @@ export default function GridPage() {
     ? `${selected.market.id}-${selected.outcome}`
     : "";
 
-  async function fetchEvent(slug: string) {
+  async function fetchEvent(slug: string): Promise<{ event: Record<string, unknown>; markets: MarketSummary[] } | null> {
     setLoadingEvent(true);
     setEventData(null);
+    setMarkets([]); // 清空市场列表
     try {
       const res = await fetch(`/api/event?slug=${encodeURIComponent(slug)}`, {
         cache: "no-store",
@@ -93,7 +95,13 @@ export default function GridPage() {
       }
       if (isRecord(data)) {
         setEventData(data);
-        return data;
+        // 直接从 event.markets 提取并规范化市场数据
+        const eventMarkets = Array.isArray(data.markets) ? data.markets : [];
+        const normalizedMarkets = eventMarkets
+          .map(normalizeMarket)
+          .filter((m): m is MarketSummary => !!m);
+        setMarkets(normalizedMarkets);
+        return { event: data, markets: normalizedMarkets };
       }
       setEventData(null);
       return null;
@@ -157,49 +165,18 @@ export default function GridPage() {
     };
   }
 
-  async function fetchMarkets(slug: string) {
-    setLoadingMarkets(true);
-    try {
-      const res = await fetch(
-        `/api/markets?slug=${encodeURIComponent(slug)}&closed=false`,
-        { cache: "no-store" }
-      );
-      const data = await res.json();
-      if (isRecord(data) && typeof data.error === "string") {
-        notify(`Markets 加载失败：${data.error}`);
-        setMarkets([]);
-        return [];
-      }
-      const arr: MarketSummary[] = (isRecord(data) && Array.isArray(data.data)
-        ? data.data
-        : [])
-        .map(normalizeMarket)
-        .filter((m): m is MarketSummary => !!m);
-      setMarkets(arr);
-      return arr;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      notify(`Markets 加载失败：${message}`);
-      setMarkets([]);
-      return [];
-    } finally {
-      setLoadingMarkets(false);
-    }
-  }
-
   async function handleSearch(slug: string) {
     setQuery({ slug, marketId: null, outcome: null });
-    const event = await fetchEvent(slug);
-    if (!event) {
-      setMarkets([]);
+    const result = await fetchEvent(slug);
+    if (!result) {
       setSelected({ market: null, outcome: "YES" });
       return;
     }
-    // 直接使用 slug 获取 markets，无需提取 eventId
-    const arr = await fetchMarkets(slug);
-    if (arr.length > 0) {
-      setSelected({ market: arr[0], outcome: "YES" });
-      setQuery({ slug, marketId: arr[0].id, outcome: "YES" });
+    // 使用返回的 markets
+    const { markets: fetchedMarkets } = result;
+    if (fetchedMarkets.length > 0) {
+      setSelected({ market: fetchedMarkets[0], outcome: "YES" });
+      setQuery({ slug, marketId: fetchedMarkets[0].id, outcome: "YES" });
     } else {
       setSelected({ market: null, outcome: "YES" });
       setQuery({ slug, marketId: null, outcome: null });
@@ -209,12 +186,12 @@ export default function GridPage() {
   React.useEffect(() => {
     if (!query.slug) return;
     (async () => {
-      const event = await fetchEvent(query.slug!);
-      if (!event) return;
-      // 直接使用 slug 获取 markets
-      const arr = await fetchMarkets(query.slug!);
-      if (arr.length === 0) return;
-      const desired = arr.find((m) => m.id === query.marketId) ?? arr[0];
+      const result = await fetchEvent(query.slug!);
+      if (!result) return;
+      // 使用返回的 markets
+      const { markets: fetchedMarkets } = result;
+      if (fetchedMarkets.length === 0) return;
+      const desired = fetchedMarkets.find((m) => m.id === query.marketId) ?? fetchedMarkets[0];
       const desiredOutcome = query.outcome === "NO" ? "NO" : "YES";
       setSelected({ market: desired, outcome: desiredOutcome });
       if (
@@ -243,8 +220,11 @@ export default function GridPage() {
         <WalletConnectButton />
       </div>
 
-      <AccountStatusPanel />
-      <AllowanceChecklist />
+      <div className="grid gap-4 md:grid-cols-3">
+        <AccountStatusPanel />
+        <AllowanceChecklist />
+        <HealthCheckDashboard />
+      </div>
 
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="space-y-4">
@@ -259,7 +239,7 @@ export default function GridPage() {
           <h2 className="text-lg font-semibold">关联 Markets</h2>
           <MarketList
             markets={markets}
-            loading={loadingMarkets}
+            loading={loadingEvent}
             selectedId={selected.market?.id}
             selectedOutcome={selected.outcome}
             onSelect={handleSelectMarket}
@@ -273,10 +253,10 @@ export default function GridPage() {
             <h2 className="text-lg font-semibold">订单簿</h2>
             <OrderBookView tokenID={tokenID} />
           </div>
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-600">
-              <span>
-                当前市场：{selected.market.question} ({selected.outcome})
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-600">
+                <span>
+                  当前市场：{selected.market.question} ({selected.outcome})
               </span>
               <span>tickSize: {selected.market.tickSize ?? "-"}</span>
               <TestOrderButton tokenID={tokenID} side={selected.outcome} />
@@ -329,6 +309,7 @@ export default function GridPage() {
               </Button>
             </div>
             <StrategyStatusPanel id={strategyId} />
+            <RiskEventTimeline />
           </div>
         </div>
       ) : (

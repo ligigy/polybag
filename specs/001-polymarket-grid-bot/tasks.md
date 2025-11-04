@@ -305,15 +305,15 @@
 
 ### Account Monitoring Enhancement
 
-- [ ] T061 [US2] 创建 `app/api/account/stream` SSE 路由：
+- [X] T061 [US2] 创建 `app/api/account/stream` SSE 路由：
   - 聚合 WS user feed（若可用）或轮询
   - 推送增量事件：balance 变化、new order、order filled/cancelled、trade
   - 格式：`event: account`, `data: { type: "balance"|"order"|"trade", payload: {...} }`
-- [ ] T062 [US2] 创建 `app/api/account/health` GET 路由：
+- [X] T062 [US2] 创建 `app/api/account/health` GET 路由：
   - 检查：API Key 有效期、WS 最后心跳时间、系统时钟与 Polygon 偏移、限流状态（从错误日志推断）
   - 返回：`{ healthy: boolean, issues: Issue[] }`
-- [ ] T063 [US2] 创建 `app/components/HealthCheckDashboard.tsx`：展示账户健康状态、风控告警、最近错误
-- [ ] T064 [US2] 实现风控触发历史记录：保存触发时间、规则、动作到 state 文件，前端展示时间线
+- [X] T063 [US2] 创建 `app/components/HealthCheckDashboard.tsx`：展示账户健康状态、风控告警、最近错误
+- [X] T064 [US2] 实现风控触发历史记录：保存触发时间、规则、动作到 state 文件，前端展示时间线
 
 ### Logging & Metrics Export
 

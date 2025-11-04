@@ -12,7 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    "clob-client-main/**",
+    "polymarket-docs/**",
     "node_modules/**",
     "dist/**",
     "coverage/**",

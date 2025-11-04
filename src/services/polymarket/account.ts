@@ -91,7 +91,7 @@ export class AccountService {
 
     let lastBalance = snapshot.balance;
     let lastOrders = new Map(snapshot.openOrders.map((o) => [o.id, o]));
-    let seenTrades = new Set(
+    const seenTrades = new Set(
       snapshot.recentTrades.map((t) => t.tradeId || `${t.orderId}-${t.ts}`)
     );
 
@@ -185,6 +185,7 @@ export class AccountService {
       if (wsClient) {
         await wsClient.close(true);
       }
+      listeners.clear();
     };
 
     const onEvent = (listener: (event: AccountStreamEvent) => void) => {
