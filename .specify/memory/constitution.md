@@ -1,50 +1,71 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+Version: 0.0.0 -> 1.0.0
+Modified Principles:
+- (new) I. User-Governed Execution (NON-NEGOTIABLE)
+- (new) II. Deterministic Strategy Lifecycle
+- (new) III. Typed Market Data Contracts (NON-NEGOTIABLE)
+- (new) IV. Test-First Automation
+- (new) V. Telemetry & Incident Visibility
+Added sections:
+- Core Principles
+- Platform Constraints
+- Development Workflow
+Removed sections:
+- None
+Templates requiring updates:
+- .specify/templates/plan-template.md ✅ updated
+- .specify/templates/spec-template.md ✅ updated
+- .specify/templates/tasks-template.md ✅ updated
+Follow-up TODOs:
+- None
+-->
+
+# Polybag Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. User-Governed Execution (NON-NEGOTIABLE)
+- The platform MUST remain non-custodial: backend services never store private keys or API credentials and MAY NOT trigger autonomous orders.
+- Every irreversible market action requires explicit user approval, surfaced in the UI or signed requests, and MUST document the initiating actor.
+These safeguards preserve user control and limit operational blast radius.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Deterministic Strategy Lifecycle
+- Strategy changes MUST originate from an approved spec and plan, capturing entry/exit conditions, budget limits, and rollback procedures.
+- Deployments MAY proceed only after documenting the impact in `specs/` and confirming that implementations match the committed plan.
+This ensures strategies are reviewable, reproducible, and auditable.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Typed Market Data Contracts (NON-NEGOTIABLE)
+- Key market data structures (order books, trades, balances, grid layers) MUST be expressed with explicit TypeScript types or JSON schemas enforced at compile time and runtime.
+- Any schema change requires documenting compatibility expectations and updating corresponding validators, normalizers, and downstream consumers.
+Type constraints prevent silent data drift and satisfy the requirement that critical structures stay type-safe (`对于关键的数据结构, 一定要使用类型约束`).
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Test-First Automation
+- New behavior MUST ship with failing tests (unit, integration, or contract) before implementation; automated checks MUST cover happy path and edge risk scenarios.
+- No production change may merge while tests fail or lack deterministic assertions for the affected strategy pathway.
+Disciplined testing keeps automated trading predictable and reviewable.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Telemetry & Incident Visibility
+- Real-time services MUST emit structured logs, metrics, and health indicators sufficient to trace market actions, WebSocket state, and worker heartbeats.
+- Critical incidents (reconnect storms, slippage breaches, budget overruns) MUST raise alerts and be cataloged with remediation steps.
+Observability ensures timely detection and response across live market operations.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Platform Constraints
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- Production environments MUST run on Node.js ≥ 18 with vetted dependencies; experimental packages require documented risk assessment.
+- Secrets reside in user-controlled storage or secure vault integrations; `.env` files checked into source control are prohibited.
+- External connectivity to Polymarket endpoints MUST respect documented rate limits and throttle policies.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Development Workflow
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- Feature work follows the `spec → plan → tasks → implementation` sequence, updating `/specs/001-polymarket-grid-bot/` artifacts before code.
+- Reviews MUST verify alignment with this constitution, including type contracts, tests, and telemetry instrumentation.
+- Migrations or infrastructure shifts require rollback instructions and validation steps recorded alongside the change.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- This constitution supersedes conflicting guidelines; amendments require consensus of project maintainers, documented rationale, and updated templates/checklists.
+- Versioning follows semantic rules: MAJOR for breaking changes to principles/governance, MINOR for new principles or sections, PATCH for clarifications.
+- Compliance reviews occur at each release milestone; non-conformant work items MUST not ship until remediated or formally waived with risk documentation.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2025-11-04 | **Last Amended**: 2025-11-04

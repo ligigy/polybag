@@ -1,12 +1,9 @@
 "use client";
 import React from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import PolymarketWSClient from "@/services/polymarket/ws-client";
+import { normalizeWsMarketToOrderBook } from "@/services/polymarket/normalize";
 
 type Level = { price: number; size: number; count?: number };
 type OrderBook = {
@@ -22,47 +19,75 @@ export default function OrderBookView({ tokenID }: { tokenID: string }) {
   const [orderbook, setOrderbook] = React.useState<OrderBook | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [mode, setMode] = React.useState<"ws" | "poll">("ws");
+  const mode = "ws";
 
   React.useEffect(() => {
-    let es: EventSource | null = null;
+    let client: PolymarketWSClient | null = null;
     let closed = false;
     setLoading(true);
     setError(null);
     setOrderbook(null);
 
-    const startStream = (nextMode: "ws" | "poll") => {
-      if (closed) return;
-      if (es) es.close();
-      setMode(nextMode);
-      const url = `/api/markets/stream?mode=${nextMode}&tokenID=${encodeURIComponent(
-        tokenID
-      )}`;
-      es = new EventSource(url);
-      es.addEventListener("orderbook", (event) => {
-        try {
-          const data = JSON.parse((event as MessageEvent).data);
-          if (data?.orderbook) {
-            setOrderbook(data.orderbook as OrderBook);
+    const start = async () => {
+      const envUrl = (process.env.NEXT_PUBLIC_WS_URL || "").trim();
+      const base =
+        envUrl.length > 0
+          ? envUrl.replace(/\/$/, "")
+          : "wss://ws-subscriptions-clob.polymarket.com/ws";
+      const wsUrl = base.endsWith("/market") ? base : `${base}/market`;
+
+      const wsClient = new PolymarketWSClient({
+        url: wsUrl,
+        autoReconnect: true,
+        onMessage: (msg) => {
+          if (closed) return;
+          console.log('msg', msg);
+          const ob = normalizeWsMarketToOrderBook(tokenID, msg);
+          console.log('ob', ob);
+          if (ob) {
+            setOrderbook(ob);
             setLoading(false);
+            setError(null);
           }
-        } catch (err) {
-          console.error(err);
-        }
+        },
+        onError: (err) => {
+          if (closed) return;
+          const message =
+            err instanceof Error ? err.message : String(err ?? "WS error");
+          setError(message);
+          setLoading(false);
+        },
+        onStatusChange: (status) => {
+          if (closed) return;
+          if (status === "closed") {
+            setError((prev) => prev ?? "订单簿连接已关闭");
+          }
+        },
       });
-      es.addEventListener("error", () => {
-        setError("订单簿连接异常，正在回退...");
-        if (nextMode === "ws") {
-          startStream("poll");
-        }
-      });
+      client = wsClient;
+
+      try {
+        await wsClient.connect();
+        await wsClient.subscribeMarket({
+          assets_ids: [tokenID],
+          initial_dump: true,
+        });
+      } catch (err) {
+        if (closed) return;
+        const message =
+          err instanceof Error ? err.message : String(err ?? "WS connect error");
+        setError(message || "订单簿连接失败");
+        setLoading(false);
+      }
     };
 
-    startStream("ws");
+    void start();
 
     return () => {
       closed = true;
-      if (es) es.close();
+      if (client) {
+        client.close(true).catch(() => undefined);
+      }
     };
   }, [tokenID]);
 

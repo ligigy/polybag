@@ -11,6 +11,7 @@ description: "Task list template for feature implementation"
 **Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
+**Constitution Alignment**: Include dedicated tasks for typed data contracts, pre-implementation tests, and telemetry/alert coverage when applicable.
 
 ## Format: `[ID] [P?] [Story] Description`
 

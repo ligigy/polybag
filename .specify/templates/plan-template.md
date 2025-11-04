@@ -31,7 +31,11 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- Confirm **User-Governed Execution**: no proposal introduces autonomous trading or backend custody of keys/API secrets.
+- Confirm **Deterministic Strategy Lifecycle**: strategy goals, entry/exit rules, budgets, and rollback steps are captured in the spec/plan.
+- Confirm **Typed Market Data Contracts**: key data structures are enumerated with TypeScript types or schemas and runtime validation strategy.
+- Confirm **Test-First Automation**: outline failing tests to be authored before implementation for each risk scenario.
+- Confirm **Telemetry & Incident Visibility**: identify required logs/metrics/alerts covering the proposed change.
 
 ## Project Structure
 

@@ -63,23 +63,43 @@ export async function GET(req: NextRequest) {
         );
         const cfg = adapter.getConfig();
         const baseWs = cfg.wsUrl.endsWith("/market") ? cfg.wsUrl : `${cfg.wsUrl}/market`;
+        
+        console.log(`[OrderBook WS] Connecting to: ${baseWs}`);
+        console.log(`[OrderBook WS] Subscribing to tokenID: ${tokenID}`);
+        
         const client = new PolymarketWSClient({
           url: baseWs,
           onMessage: (msg) => {
+            console.log(`[OrderBook WS] Received message:`, JSON.stringify(msg).slice(0, 200));
             const ob = normalizeWsMarketToOrderBook(tokenID, msg);
-            if (ob) controller.enqueue(encodeSse({ orderbook: ob }, "orderbook"));
+            if (ob) {
+              console.log(`[OrderBook WS] Normalized orderbook: bids=${ob.bids.length}, asks=${ob.asks.length}`);
+              controller.enqueue(encodeSse({ orderbook: ob }, "orderbook"));
+            } else {
+              console.log(`[OrderBook WS] Message ignored (not a book snapshot or wrong token)`);
+            }
           },
           onError: (err) => {
+            console.error(`[OrderBook WS] Error:`, err);
             controller.enqueue(encodeSse({ error: String(err) }, "error"));
+          },
+          onStatusChange: (status) => {
+            console.log(`[OrderBook WS] Status changed to: ${status}`);
           },
         });
         await client.connect();
         await client.subscribeMarket({ assets_ids: [tokenID], initial_dump: true });
+        console.log(`[OrderBook WS] Subscribed successfully`);
+        
         // @ts-expect-error signal available
         const signal: AbortSignal | undefined = controller.signal;
-        if (signal) signal.addEventListener("abort", () => client.close(true));
+        if (signal) signal.addEventListener("abort", () => {
+          console.log(`[OrderBook WS] Client disconnecting...`);
+          client.close(true);
+        });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
+        console.error(`[OrderBook WS] Fatal error:`, message);
         controller.enqueue(encodeSse({ error: message }, "error"));
       }
     },

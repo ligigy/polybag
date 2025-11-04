@@ -1,4 +1,4 @@
-"use client";
+'use client';
 // Global app providers: RainbowKit + wagmi + React Query
 // NOTE: Requires installing wagmi/viem/@rainbow-me/rainbowkit and react-query.
 
@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { ToastProvider } from '@/components/ui/toast';
 import React from 'react';
+import { HeroUIProvider } from '@heroui/react';
 
 const config = getDefaultConfig({
   appName: 'Poly Grid Bot',
@@ -27,7 +28,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <WagmiProvider config={config as unknown as ReturnType<typeof createConfig>}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <HeroUIProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </HeroUIProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
