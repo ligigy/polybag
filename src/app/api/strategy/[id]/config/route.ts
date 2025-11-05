@@ -20,24 +20,29 @@ export interface GridConfig {
   ttlSeconds?: number;
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const cfg = await readJson<GridConfig | null>(`strategies/${id}/config.json`, null);
   if (!cfg) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
   return Response.json({ id, config: cfg });
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = (await req.json()) as { config: GridConfig };
-  if (!body?.config) return new Response(JSON.stringify({ error: 'Missing config' }), { status: 400 });
+  if (!body?.config)
+    return new Response(JSON.stringify({ error: 'Missing config' }), { status: 400 });
 
   // Basic validation
   const c = body.config;
-  if (!c.marketId || !c.outcome) return new Response(JSON.stringify({ error: 'marketId/outcome required' }), { status: 400 });
-  if (!(c.priceMax > c.priceMin) || !(c.step > 0)) return new Response(JSON.stringify({ error: 'invalid range/step' }), { status: 400 });
+  if (!c.marketId || !c.outcome)
+    return new Response(JSON.stringify({ error: 'marketId/outcome required' }), { status: 400 });
+  if (!(c.priceMax > c.priceMin) || !(c.step > 0))
+    return new Response(JSON.stringify({ error: 'invalid range/step' }), { status: 400 });
   if (c.orderType === 'GTD' && (!c.ttlSeconds || c.ttlSeconds < 10)) {
-    return new Response(JSON.stringify({ error: 'ttlSeconds must be >= 10 for GTD' }), { status: 400 });
+    return new Response(JSON.stringify({ error: 'ttlSeconds must be >= 10 for GTD' }), {
+      status: 400,
+    });
   }
 
   await writeJson(`strategies/${id}/config.json`, c);

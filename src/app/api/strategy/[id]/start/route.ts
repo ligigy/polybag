@@ -2,8 +2,8 @@ import { NextRequest } from 'next/server';
 import { hasRunner, registerRunner, stopRunner } from '@/worker/registry';
 import { startGridRunner } from '@/worker/gridRunner';
 
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     if (hasRunner(id)) {
       return Response.json({ ok: true, alreadyRunning: true });
@@ -15,4 +15,3 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     return new Response(JSON.stringify({ error: e?.message || '启动失败' }), { status: 500 });
   }
 }
-

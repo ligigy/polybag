@@ -2,8 +2,8 @@ import { NextRequest } from 'next/server';
 import { stopRunner } from '@/worker/registry';
 import { stopGridRunner } from '@/worker/gridRunner';
 
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     stopRunner(id);
     await stopGridRunner(id);
@@ -12,4 +12,3 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     return new Response(JSON.stringify({ error: e?.message || '停止失败' }), { status: 500 });
   }
 }
-
