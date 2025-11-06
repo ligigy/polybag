@@ -21,6 +21,11 @@ const eslintConfig = defineConfig([
     ".idea/**",
     ".DS_Store",
   ]),
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

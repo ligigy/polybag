@@ -1,32 +1,22 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useToast } from "@/components/ui/toast";
-import EventSearchBar from "@/app/components/EventSearchBar";
-import MarketDetails from "@/app/components/MarketDetails";
-import MarketList, { MarketSummary } from "@/app/components/MarketList";
-import OrderBookView from "@/app/components/OrderBookView";
-import GridConfigForm from "@/app/components/GridConfigForm";
-import AccountStatusPanel from "@/app/components/AccountStatusPanel";
-import StrategyStatusPanel from "@/app/components/StrategyStatusPanel";
-import AllowanceChecklist from "@/app/components/AllowanceChecklist";
-import HealthCheckDashboard from "@/app/components/HealthCheckDashboard";
-import RiskEventTimeline from "@/app/components/RiskEventTimeline";
-import TestOrderButton from "@/app/components/TestOrderButton";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import ApiKeyManager from "@/app/components/ApiKeyManager";
+import React from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useToast } from '@/components/ui/toast';
+import EventSearchBar from '@/app/components/EventSearchBar';
+import MarketDetails from '@/app/components/MarketDetails';
+import MarketList, { MarketSummary } from '@/app/components/MarketList';
+import OrderBookView from '@/app/components/OrderBookView';
+import GridConfigForm from '@/app/components/GridConfigForm';
+import StrategyStatusPanel from '@/app/components/StrategyStatusPanel';
+import RiskEventTimeline from '@/app/components/RiskEventTimeline';
+import TestOrderButton from '@/app/components/TestOrderButton';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
-type Outcome = "YES" | "NO";
+import AccountAllowanceBlock from '@/app/components/AccountAllowanceBlock';
+
+type Outcome = 'YES' | 'NO';
 
 interface QueryState {
   slug?: string | null;
@@ -39,20 +29,20 @@ function useQueryState(): [QueryState, (state: QueryState) => void] {
   const params = useSearchParams();
 
   const state: QueryState = {
-    slug: params.get("slug"),
-    marketId: params.get("marketId"),
-    outcome: (params.get("outcome") as Outcome | null) ?? null,
+    slug: params.get('slug'),
+    marketId: params.get('marketId'),
+    outcome: (params.get('outcome') as Outcome | null) ?? null,
   };
 
   const update = React.useCallback(
     (next: QueryState) => {
       const usp = new URLSearchParams(Array.from(params.entries()));
-      if (next.slug) usp.set("slug", next.slug);
-      else usp.delete("slug");
-      if (next.marketId) usp.set("marketId", next.marketId);
-      else usp.delete("marketId");
-      if (next.outcome) usp.set("outcome", next.outcome);
-      else usp.delete("outcome");
+      if (next.slug) usp.set('slug', next.slug);
+      else usp.delete('slug');
+      if (next.marketId) usp.set('marketId', next.marketId);
+      else usp.delete('marketId');
+      if (next.outcome) usp.set('outcome', next.outcome);
+      else usp.delete('outcome');
       router.replace(`?${usp.toString()}`);
     },
     [params, router]
@@ -62,30 +52,26 @@ function useQueryState(): [QueryState, (state: QueryState) => void] {
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
+  return typeof value === 'object' && value !== null;
 }
 
 export default function Home() {
   const { notify } = useToast();
   const [query, setQuery] = useQueryState();
-  const [eventData, setEventData] = React.useState<Record<string, unknown> | null>(
-    null
-  );
+  const [eventData, setEventData] = React.useState<Record<string, unknown> | null>(null);
   const [markets, setMarkets] = React.useState<MarketSummary[]>([]);
   const [selected, setSelected] = React.useState<{
     market: MarketSummary | null;
     outcome: Outcome;
-  }>({ market: null, outcome: "YES" });
+  }>({ market: null, outcome: 'YES' });
   const [loadingEvent, setLoadingEvent] = React.useState(false);
 
   const tokenID = selected.market
-    ? selected.outcome === "YES"
+    ? selected.outcome === 'YES'
       ? selected.market.yesTokenId || selected.market.id
       : selected.market.noTokenId || selected.market.id
-    : "";
-  const strategyId = selected.market
-    ? `${selected.market.id}-${selected.outcome}`
-    : "";
+    : '';
+  const strategyId = selected.market ? `${selected.market.id}-${selected.outcome}` : '';
 
   async function fetchEvent(
     slug: string
@@ -95,10 +81,10 @@ export default function Home() {
     setMarkets([]);
     try {
       const res = await fetch(`/api/event?slug=${encodeURIComponent(slug)}`, {
-        cache: "no-store",
+        cache: 'no-store',
       });
       const data = await res.json();
-      if (isRecord(data) && typeof data.error === "string") {
+      if (isRecord(data) && typeof data.error === 'string') {
         notify(`事件加载失败：${data.error}`);
         return null;
       }
@@ -127,7 +113,7 @@ export default function Home() {
     const clobTokenIds = raw.clobTokenIds ?? raw.clob_token_ids;
     let tokens: string[] = [];
     if (Array.isArray(clobTokenIds)) tokens = clobTokenIds as string[];
-    else if (typeof clobTokenIds === "string") {
+    else if (typeof clobTokenIds === 'string') {
       try {
         tokens = JSON.parse(clobTokenIds);
       } catch {
@@ -150,17 +136,16 @@ export default function Home() {
         (raw.id as string | number | undefined) ||
           (raw.marketId as string | number | undefined) ||
           (raw.market as string | number | undefined) ||
-          ""
+          ''
       ),
       question:
         (raw.question as string | undefined) ||
         (raw.ticker as string | undefined) ||
         (raw.slug as string | undefined) ||
-        String(raw.id ?? ""),
+        String(raw.id ?? ''),
       slug: raw.slug as string | undefined,
       conditionId:
-        (raw.conditionId as string | undefined) ||
-        (raw.condition_id as string | undefined),
+        (raw.conditionId as string | undefined) || (raw.condition_id as string | undefined),
       yesTokenId: yesToken,
       noTokenId: noToken,
       tickSize:
@@ -177,15 +162,15 @@ export default function Home() {
     setQuery({ slug, marketId: null, outcome: null });
     const result = await fetchEvent(slug);
     if (!result) {
-      setSelected({ market: null, outcome: "YES" });
+      setSelected({ market: null, outcome: 'YES' });
       return;
     }
     const { markets: fetchedMarkets } = result;
     if (fetchedMarkets.length > 0) {
-      setSelected({ market: fetchedMarkets[0], outcome: "YES" });
-      setQuery({ slug, marketId: fetchedMarkets[0].id, outcome: "YES" });
+      setSelected({ market: fetchedMarkets[0], outcome: 'YES' });
+      setQuery({ slug, marketId: fetchedMarkets[0].id, outcome: 'YES' });
     } else {
-      setSelected({ market: null, outcome: "YES" });
+      setSelected({ market: null, outcome: 'YES' });
       setQuery({ slug, marketId: null, outcome: null });
     }
   }
@@ -197,9 +182,8 @@ export default function Home() {
       if (!result) return;
       const { markets: fetchedMarkets } = result;
       if (fetchedMarkets.length === 0) return;
-      const desired =
-        fetchedMarkets.find((m) => m.id === query.marketId) ?? fetchedMarkets[0];
-      const desiredOutcome = query.outcome === "NO" ? "NO" : "YES";
+      const desired = fetchedMarkets.find((m) => m.id === query.marketId) ?? fetchedMarkets[0];
+      const desiredOutcome = query.outcome === 'NO' ? 'NO' : 'YES';
       setSelected({ market: desired, outcome: desiredOutcome });
       if (query.marketId !== desired.id || query.outcome !== desiredOutcome) {
         setQuery({
@@ -219,33 +203,14 @@ export default function Home() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
-        <AccountStatusPanel />
-        <AllowanceChecklist />
-        <HealthCheckDashboard />
-      </div>
-
-      <div className="flex justify-end">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline">管理 API Key</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-xl">
-            <DialogHeader>
-              <DialogTitle>API Key 管理</DialogTitle>
-              <DialogDescription>
-                派生、查看或吊销 API Key，用于与 Polymarket CLOB 通信。
-              </DialogDescription>
-            </DialogHeader>
-            <ApiKeyManager />
-          </DialogContent>
-        </Dialog>
+      <div className="grid gap-4 md:grid-cols-2">
+        <AccountAllowanceBlock />
       </div>
 
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="space-y-4">
           <EventSearchBar
-            defaultValue={query.slug || ""}
+            defaultValue={query.slug || ''}
             loading={loadingEvent}
             onSearch={handleSearch}
           />
@@ -274,14 +239,14 @@ export default function Home() {
               <span>
                 当前市场：{selected.market.question} ({selected.outcome})
               </span>
-              <span>tickSize: {selected.market.tickSize ?? "-"}</span>
+              <span>tickSize: {selected.market.tickSize ?? '-'}</span>
               <TestOrderButton tokenID={tokenID} side={selected.outcome} />
             </div>
             <GridConfigForm
               marketId={selected.market.id}
               tokenID={tokenID}
               outcome={selected.outcome}
-              onSaved={() => notify("策略配置已保存")}
+              onSaved={() => notify('策略配置已保存')}
             />
             <div className="flex items-center gap-2">
               <Button
@@ -290,11 +255,11 @@ export default function Home() {
                   try {
                     const resp = await fetch(
                       `/api/strategy/${encodeURIComponent(strategyId)}/start`,
-                      { method: "POST" }
+                      { method: 'POST' }
                     );
                     const data = await resp.json();
                     if (data?.error) notify(`启动失败：${data.error}`);
-                    else notify("已触发启动");
+                    else notify('已触发启动');
                   } catch (err) {
                     const message = err instanceof Error ? err.message : String(err);
                     notify(`启动失败：${message}`);
@@ -310,11 +275,11 @@ export default function Home() {
                   try {
                     const resp = await fetch(
                       `/api/strategy/${encodeURIComponent(strategyId)}/stop`,
-                      { method: "POST" }
+                      { method: 'POST' }
                     );
                     const data = await resp.json();
                     if (data?.error) notify(`停止失败：${data.error}`);
-                    else notify("已请求停止");
+                    else notify('已请求停止');
                   } catch (err) {
                     const message = err instanceof Error ? err.message : String(err);
                     notify(`停止失败：${message}`);
