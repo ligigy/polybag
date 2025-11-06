@@ -1,7 +1,7 @@
 // Polymarket WebSocket 客户端封装
 // 支持市场与用户订阅、自动重连、心跳 PING、初始快照与状态事件。
 
-export type FeedType = "market" | "user";
+export type FeedType = 'market' | 'user';
 
 export interface MarketSubscription {
   markets?: string[]; // condition_ids
@@ -24,12 +24,7 @@ export interface WsMessage {
   [k: string]: unknown;
 }
 
-export type WsStatus =
-  | "idle"
-  | "connecting"
-  | "connected"
-  | "reconnecting"
-  | "closed";
+export type WsStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'closed';
 
 export interface WsClientOptions {
   url: string; // e.g. wss://.../ws/market 或 /ws/user
@@ -60,7 +55,7 @@ export class PolymarketWSClient {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
   private shouldReconnect = true;
-  private status: WsStatus = "idle";
+  private status: WsStatus = 'idle';
   private subscriptions: Subscription[] = [];
 
   constructor(opts: WsClientOptions) {
@@ -81,10 +76,7 @@ export class PolymarketWSClient {
     await this.open(false);
   }
 
-  async subscribe(
-    feed: FeedType,
-    payload: MarketSubscription | UserSubscription
-  ): Promise<void> {
+  async subscribe(feed: FeedType, payload: MarketSubscription | UserSubscription): Promise<void> {
     const enriched: Subscription = {
       feed,
       payload: {
@@ -106,20 +98,20 @@ export class PolymarketWSClient {
   }
 
   async subscribeMarket(payload: MarketSubscription): Promise<void> {
-    return this.subscribe("market", payload);
+    return this.subscribe('market', payload);
   }
 
   async subscribeUser(payload: UserSubscription): Promise<void> {
     if (!payload.auth) {
-      throw new Error("User feed requires auth credentials");
+      throw new Error('User feed requires auth credentials');
     }
-    return this.subscribe("user", payload);
+    return this.subscribe('user', payload);
   }
 
   async close(permanent = true): Promise<void> {
     if (permanent) {
       this.shouldReconnect = false;
-      this.updateStatus("closed");
+      this.updateStatus('closed');
     }
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
@@ -133,21 +125,21 @@ export class PolymarketWSClient {
       try {
         // 关闭前去除事件监听，避免触发重复回调
         const ws = this.ws;
-        if (typeof ws.removeEventListener === "function") {
-          ws.removeEventListener("message", this.handleMessage);
-          ws.removeEventListener("error", this.handleError);
-          ws.removeEventListener("close", this.handleClose);
-          ws.removeEventListener("open", this.handleOpen);
-        } else if (typeof ws.off === "function") {
-          ws.off("message", this.handleMessage);
-          ws.off("error", this.handleError);
-          ws.off("close", this.handleClose);
-          ws.off("open", this.handleOpen);
-        } else if (typeof ws.removeListener === "function") {
-          ws.removeListener("message", this.handleMessage);
-          ws.removeListener("error", this.handleError);
-          ws.removeListener("close", this.handleClose);
-          ws.removeListener("open", this.handleOpen);
+        if (typeof ws.removeEventListener === 'function') {
+          ws.removeEventListener('message', this.handleMessage);
+          ws.removeEventListener('error', this.handleError);
+          ws.removeEventListener('close', this.handleClose);
+          ws.removeEventListener('open', this.handleOpen);
+        } else if (typeof ws.off === 'function') {
+          ws.off('message', this.handleMessage);
+          ws.off('error', this.handleError);
+          ws.off('close', this.handleClose);
+          ws.off('open', this.handleOpen);
+        } else if (typeof ws.removeListener === 'function') {
+          ws.removeListener('message', this.handleMessage);
+          ws.removeListener('error', this.handleError);
+          ws.removeListener('close', this.handleClose);
+          ws.removeListener('open', this.handleOpen);
         }
         ws.close();
       } catch {
@@ -159,7 +151,7 @@ export class PolymarketWSClient {
 
   private async open(isReconnect: boolean): Promise<void> {
     await this.ensureCtor();
-    this.updateStatus(isReconnect ? "reconnecting" : "connecting");
+    this.updateStatus(isReconnect ? 'reconnecting' : 'connecting');
 
     if (this.ws) {
       await this.close(false);
@@ -167,15 +159,15 @@ export class PolymarketWSClient {
 
     this.ws = new this.WebSocketCtor(this.opts.url);
 
-    this.bindEvent("open", this.handleOpen);
-    this.bindEvent("message", this.handleMessage);
-    this.bindEvent("error", this.handleError);
-    this.bindEvent("close", this.handleClose);
+    this.bindEvent('open', this.handleOpen);
+    this.bindEvent('message', this.handleMessage);
+    this.bindEvent('error', this.handleError);
+    this.bindEvent('close', this.handleClose);
 
     if (this.pingTimer) clearInterval(this.pingTimer);
     this.pingTimer = setInterval(() => {
       try {
-        this.ws?.send("PING");
+        this.ws?.send('PING');
       } catch (err) {
         this.opts.onError?.(err);
       }
@@ -184,14 +176,12 @@ export class PolymarketWSClient {
 
   private async ensureCtor() {
     if (this.WebSocketCtor) return;
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       try {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        this.WebSocketCtor = require("ws");
+        this.WebSocketCtor = require('ws');
       } catch {
-        throw new Error(
-          "WS client not available on server (missing ws dependency)"
-        );
+        throw new Error('WS client not available on server (missing ws dependency)');
       }
     } else {
       this.WebSocketCtor = (window as any).WebSocket;
@@ -200,16 +190,16 @@ export class PolymarketWSClient {
 
   private bindEvent(event: string, handler: (...args: any[]) => void) {
     if (!this.ws) return;
-    if (typeof this.ws.addEventListener === "function") {
+    if (typeof this.ws.addEventListener === 'function') {
       this.ws.addEventListener(event, handler as any);
-    } else if (typeof this.ws.on === "function") {
+    } else if (typeof this.ws.on === 'function') {
       this.ws.on(event, handler);
     }
   }
 
   private readonly handleOpen = () => {
     this.reconnectAttempts = 0;
-    this.updateStatus("connected");
+    this.updateStatus('connected');
     // 重新发送订阅
     for (const sub of this.subscriptions) {
       this.sendSubscription(sub);
@@ -219,12 +209,14 @@ export class PolymarketWSClient {
   private readonly handleMessage = (event: any) => {
     try {
       const data =
-        typeof event?.data === "string"
+        typeof event?.data === 'string'
           ? event.data
-          : typeof event === "string"
-          ? event
-          : event?.toString?.() ?? "";
+          : typeof event === 'string'
+            ? event
+            : (event?.toString?.() ?? '');
       if (!data) return;
+      // 忽略 PONG 心跳响应
+      if (data === 'PONG') return;
       const msg = JSON.parse(data);
       this.opts.onMessage?.(msg as WsMessage);
     } catch (err) {
@@ -238,9 +230,7 @@ export class PolymarketWSClient {
 
   private readonly handleClose = (code: number, reason: any) => {
     const reasonStr =
-      typeof reason === "string"
-        ? reason
-        : reason?.toString?.() ?? "connection_closed";
+      typeof reason === 'string' ? reason : (reason?.toString?.() ?? 'connection_closed');
     const byUser = !this.shouldReconnect || !this.opts.autoReconnect;
     this.opts.onClose?.({ code, reason: reasonStr, byUser });
 
@@ -250,7 +240,7 @@ export class PolymarketWSClient {
     }
 
     if (!this.opts.autoReconnect || !this.shouldReconnect) {
-      this.updateStatus("closed");
+      this.updateStatus('closed');
       return;
     }
 
@@ -265,7 +255,7 @@ export class PolymarketWSClient {
     const base = this.opts.reconnectBaseMs ?? DEFAULT_RECONNECT_BASE_MS;
     const max = this.opts.maxReconnectIntervalMs ?? DEFAULT_RECONNECT_MAX_MS;
     const delay = Math.min(base * 2 ** (this.reconnectAttempts - 1), max);
-    this.updateStatus("reconnecting", this.reconnectAttempts);
+    this.updateStatus('reconnecting', this.reconnectAttempts);
     this.reconnectTimer = setTimeout(() => {
       void this.open(true);
     }, delay);
@@ -274,10 +264,7 @@ export class PolymarketWSClient {
   private sendSubscription(sub: Subscription) {
     if (!this.ws) return;
     const readyState = this.ws.readyState;
-    const OPEN =
-      typeof this.WebSocketCtor?.OPEN === "number"
-        ? this.WebSocketCtor.OPEN
-        : 1;
+    const OPEN = typeof this.WebSocketCtor?.OPEN === 'number' ? this.WebSocketCtor.OPEN : 1;
     if (readyState !== OPEN) return;
     try {
       this.ws.send(

@@ -1,7 +1,7 @@
-"use client";
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+'use client';
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 import {
   exportStoredApiKey,
   getStoredApiKey,
@@ -9,22 +9,19 @@ import {
   importStoredApiKey,
   setStoredApiKey,
   type ApiKeyCreds,
-} from "@/lib/storage/apiKeyStore";
-import { ensureTypedDataCompatibility } from "@/lib/wallet/signTypedData";
-import { useAccount } from "wagmi";
+} from '@/lib/storage/apiKeyStore';
+import { ensureTypedDataCompatibility } from '@/lib/wallet/signTypedData';
+import { useAccount } from 'wagmi';
 
 function Masked({ value }: { value: string }) {
   const [show, setShow] = React.useState(false);
   return (
     <div className="flex items-center gap-2">
-      <code className="truncate max-w-xs">{show ? value : "••••••••••••"}</code>
+      <code className="truncate max-w-xs">{show ? value : '••••••••••••'}</code>
       <button className="text-sm underline" onClick={() => setShow((s) => !s)}>
-        {show ? "隐藏" : "显示"}
+        {show ? '隐藏' : '显示'}
       </button>
-      <button
-        className="text-sm underline"
-        onClick={() => navigator.clipboard.writeText(value)}
-      >
+      <button className="text-sm underline" onClick={() => navigator.clipboard.writeText(value)}>
         复制
       </button>
     </div>
@@ -34,9 +31,7 @@ function Masked({ value }: { value: string }) {
 export default function ApiKeyManager() {
   const { address, chainId, isConnected } = useAccount();
   const { notify } = useToast();
-  const requiredChain = Number(
-    process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137
-  );
+  const requiredChain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [creds, setCreds] = React.useState<ApiKeyCreds | null>(null);
@@ -50,24 +45,20 @@ export default function ApiKeyManager() {
     setBusy(true);
     setError(null);
     try {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_CLOB_API_URL || "https://clob.polymarket.com";
-      const chain = Number(
-        process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137
-      );
+      const apiUrl = process.env.NEXT_PUBLIC_CLOB_API_URL || 'https://clob.polymarket.com';
+      const chain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
       // dynamic import to keep SSR clean
-      const { ClobClient } = await import("@polymarket/clob-client");
-      const { BrowserProvider } = await import("ethers");
+      const { ClobClient } = await import('@polymarket/clob-client');
+      const { BrowserProvider } = await import('ethers');
       const eth: any = (window as any).ethereum;
-      if (!eth) throw new Error("未检测到浏览器钱包");
+      if (!eth) throw new Error('未检测到浏览器钱包');
       const provider = new BrowserProvider(eth);
       const signerV6 = await provider.getSigner();
       // ethers v6 没有 _signTypedData，clob-client 期望 v5 接口；做一层适配
       const signer: any = ensureTypedDataCompatibility(signerV6 as any);
       const client = new ClobClient(apiUrl, chain, signer);
       const resp = await client.createOrDeriveApiKey();
-      if (!resp?.key || !resp?.secret || !resp?.passphrase)
-        throw new Error("派生失败");
+      if (!resp?.key || !resp?.secret || !resp?.passphrase) throw new Error('派生失败');
       const newCreds = {
         key: String(resp.key),
         secret: String(resp.secret),
@@ -75,10 +66,10 @@ export default function ApiKeyManager() {
       };
       setCreds(newCreds);
       setStoredApiKey(newCreds);
-      notify("API Key 派生成功");
+      notify('API Key 派生成功');
     } catch (e: any) {
-      setError(e?.message || "派生失败");
-      notify(`派生失败：${e?.message || ""}`);
+      setError(e?.message || '派生失败');
+      notify(`派生失败：${e?.message || ''}`);
     } finally {
       setBusy(false);
     }
@@ -88,26 +79,23 @@ export default function ApiKeyManager() {
     setBusy(true);
     setError(null);
     try {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_CLOB_API_URL || "https://clob.polymarket.com";
-      const chain = Number(
-        process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137
-      );
-      if (!creds) throw new Error("请先派生 API Key");
-      const { ClobClient } = await import("@polymarket/clob-client");
-      const { BrowserProvider } = await import("ethers");
+      const apiUrl = process.env.NEXT_PUBLIC_CLOB_API_URL || 'https://clob.polymarket.com';
+      const chain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
+      if (!creds) throw new Error('请先派生 API Key');
+      const { ClobClient } = await import('@polymarket/clob-client');
+      const { BrowserProvider } = await import('ethers');
       const eth: any = (window as any).ethereum;
-      if (!eth) throw new Error("未检测到浏览器钱包");
+      if (!eth) throw new Error('未检测到浏览器钱包');
       const provider = new BrowserProvider(eth);
       const signerV6 = await provider.getSigner();
       const signer: any = ensureTypedDataCompatibility(signerV6 as any);
       const client = new ClobClient(apiUrl, chain, signer, creds);
       const resp = await client.getApiKeys();
       setKeysList(resp?.data || resp || []);
-      notify("已获取 API Keys");
+      notify('已获取 API Keys');
     } catch (e: any) {
-      setError(e?.message || "获取失败");
-      notify(`获取失败：${e?.message || ""}`);
+      setError(e?.message || '获取失败');
+      notify(`获取失败：${e?.message || ''}`);
     } finally {
       setBusy(false);
     }
@@ -117,14 +105,11 @@ export default function ApiKeyManager() {
     setBusy(true);
     setError(null);
     try {
-      if (!creds) throw new Error("无当前 API Key");
-      const apiUrl =
-        process.env.NEXT_PUBLIC_CLOB_API_URL || "https://clob.polymarket.com";
-      const chain = Number(
-        process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137
-      );
-      const { ClobClient } = await import("@polymarket/clob-client");
-      const { BrowserProvider } = await import("ethers");
+      if (!creds) throw new Error('无当前 API Key');
+      const apiUrl = process.env.NEXT_PUBLIC_CLOB_API_URL || 'https://clob.polymarket.com';
+      const chain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
+      const { ClobClient } = await import('@polymarket/clob-client');
+      const { BrowserProvider } = await import('ethers');
       const eth: any = (window as any).ethereum;
       const provider = new BrowserProvider(eth);
       const signerV6 = await provider.getSigner();
@@ -135,10 +120,10 @@ export default function ApiKeyManager() {
       setCreds(null);
       setStoredApiKey(null);
       setKeysList(null);
-      notify("已吊销当前 Key 并清除本地");
+      notify('已吊销当前 Key 并清除本地');
     } catch (e: any) {
-      setError(e?.message || "吊销失败");
-      notify(`吊销失败：${e?.message || ""}`);
+      setError(e?.message || '吊销失败');
+      notify(`吊销失败：${e?.message || ''}`);
     } finally {
       setBusy(false);
     }
@@ -148,14 +133,11 @@ export default function ApiKeyManager() {
     setBusy(true);
     setError(null);
     try {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_CLOB_API_URL || "https://clob.polymarket.com";
-      const chain = Number(
-        process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137
-      );
-      if (!creds) throw new Error("请先派生 API Key");
-      const { ClobClient } = await import("@polymarket/clob-client");
-      const { BrowserProvider } = await import("ethers");
+      const apiUrl = process.env.NEXT_PUBLIC_CLOB_API_URL || 'https://clob.polymarket.com';
+      const chain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
+      if (!creds) throw new Error('请先派生 API Key');
+      const { ClobClient } = await import('@polymarket/clob-client');
+      const { BrowserProvider } = await import('ethers');
       const eth: any = (window as any).ethereum;
       const provider = new BrowserProvider(eth);
       const signerV6 = await provider.getSigner();
@@ -163,10 +145,10 @@ export default function ApiKeyManager() {
       const client = new ClobClient(apiUrl, chain, signer, creds);
       const resp = await client.getBuilderApiKeys?.();
       setKeysList(resp?.data || resp || []);
-      notify("已获取 Builder Keys");
+      notify('已获取 Builder Keys');
     } catch (e: any) {
-      setError(e?.message || "获取 Builder Keys 失败");
-      notify(`获取 Builder Keys 失败：${e?.message || ""}`);
+      setError(e?.message || '获取 Builder Keys 失败');
+      notify(`获取 Builder Keys 失败：${e?.message || ''}`);
     } finally {
       setBusy(false);
     }
@@ -176,13 +158,11 @@ export default function ApiKeyManager() {
     setBusy(true);
     setError(null);
     try {
-      if (!creds) throw new Error("请先派生 API Key");
-      const apiUrl = process.env.NEXT_PUBLIC_CLOB_API_URL || "";
-      const chain = Number(
-        process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137
-      );
-      const { ClobClient } = await import("@polymarket/clob-client");
-      const { BrowserProvider } = await import("ethers");
+      if (!creds) throw new Error('请先派生 API Key');
+      const apiUrl = process.env.NEXT_PUBLIC_CLOB_API_URL || '';
+      const chain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
+      const { ClobClient } = await import('@polymarket/clob-client');
+      const { BrowserProvider } = await import('ethers');
       const eth: any = (window as any).ethereum;
       const provider = new BrowserProvider(eth);
       const signerV6 = await provider.getSigner();
@@ -190,10 +170,10 @@ export default function ApiKeyManager() {
       const client = new ClobClient(apiUrl, chain, signer, creds);
       await client.revokeBuilderApiKeys?.();
       setKeysList(null);
-      notify("已吊销所有 Builder Keys");
+      notify('已吊销所有 Builder Keys');
     } catch (e: any) {
-      setError(e?.message || "吊销失败");
-      notify(`吊销失败：${e?.message || ""}`);
+      setError(e?.message || '吊销失败');
+      notify(`吊销失败：${e?.message || ''}`);
     } finally {
       setBusy(false);
     }
@@ -204,34 +184,29 @@ export default function ApiKeyManager() {
     const serialized = exportStoredApiKey();
     if (!serialized) return;
     const blob = new Blob([serialized], {
-      type: "application/json",
+      type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = "polymarket_apikey_backup.json";
+    a.download = 'polymarket_apikey_backup.json';
     a.click();
     URL.revokeObjectURL(url);
   }
 
   function importFromText() {
-    const text = prompt("粘贴从备份文件复制的 JSON：");
+    const text = prompt('粘贴从备份文件复制的 JSON：');
     if (!text) return;
     try {
       const imported = importStoredApiKey(text);
       setCreds(imported);
     } catch (err) {
-      alert((err as Error)?.message || "解析失败");
+      alert((err as Error)?.message || '解析失败');
     }
   }
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">API Key 管理</h2>
-      <p className="text-sm text-zinc-600">
-        安全提示：仅在浏览器会话中保存，不会发送到服务器。请妥善备份并在不用时吊销。
-      </p>
-
       <div className="text-sm">
         <div>
           钱包连接：
@@ -242,20 +217,13 @@ export default function ApiKeyManager() {
           )}
         </div>
         <div>
-          地址：<code className="break-all">{address || "-"}</code>
+          地址：<code className="break-all">{address || '-'}</code>
         </div>
         <div>
-          链 ID：{chainId || "-"}{" "}
+          链 ID：{chainId || '-'}{' '}
           {chainId && chainId !== requiredChain ? (
-            <span className="text-red-600">
-              （与要求链 {requiredChain} 不一致）
-            </span>
+            <span className="text-red-600">（与要求链 {requiredChain} 不一致）</span>
           ) : null}
-        </div>
-        <div>
-          CLOB：
-          {process.env.NEXT_PUBLIC_CLOB_API_URL ||
-            "https://clob.polymarket.com"}
         </div>
       </div>
 
@@ -263,9 +231,7 @@ export default function ApiKeyManager() {
 
       <div className="flex flex-wrap gap-2">
         <Button
-          disabled={
-            busy || !isConnected || (chainId && chainId !== requiredChain)
-          }
+          disabled={busy || !isConnected || (chainId && chainId !== requiredChain)}
           onClick={deriveKey}
         >
           派生/创建 API Key

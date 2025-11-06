@@ -12,14 +12,20 @@ function formatDate(value: string | number | null | undefined): string {
   if (!value) return '-';
   const date = typeof value === 'number' ? new Date(value * 1000) : new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleString();
+  return `${date.toLocaleString(undefined, { timeZone: 'UTC' })} UTC`;
 }
 
 export default function MarketDetails({ loading, event }: MarketDetailsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>事件详情</CardTitle>
+        <CardTitle>
+          {loading ? (
+            <Skeleton className="h-6 w-1/3" />
+          ) : (
+            event?.title || event?.name || '事件详情'
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -30,14 +36,6 @@ export default function MarketDetails({ loading, event }: MarketDetailsProps) {
           </div>
         ) : event ? (
           <div className="space-y-3 text-sm text-zinc-700 dark:text-zinc-200">
-            <div>
-              <span className="font-medium">标题：</span>
-              {event.title || event.name || '-'}
-            </div>
-            <div>
-              <span className="font-medium">Slug：</span>
-              <code className="break-all">{event.slug || '-'}</code>
-            </div>
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
               <div>
                 <span className="font-medium">开始时间：</span>

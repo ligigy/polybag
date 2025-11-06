@@ -215,9 +215,6 @@ export default function Home() {
             onSearch={handleSearch}
           />
           <MarketDetails loading={loadingEvent} event={eventData} />
-        </div>
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold">关联 Markets</h2>
           <MarketList
             markets={markets}
             loading={loadingEvent}
@@ -226,20 +223,19 @@ export default function Home() {
             onSelect={handleSelectMarket}
           />
         </div>
+        <div className="space-y-4">
+          <OrderBookView tokenID={tokenID} />
+        </div>
       </div>
 
       {selected.market && tokenID ? (
         <div className="space-y-4">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-lg font-semibold">订单簿</h2>
-            <OrderBookView tokenID={tokenID} />
-          </div>
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-600">
               <span>
                 当前市场：{selected.market.question} ({selected.outcome})
               </span>
-              <span>tickSize: {selected.market.tickSize ?? '-'}</span>
+              <span>下单额: {selected.market.tickSize ?? '-'}</span>
               <TestOrderButton tokenID={tokenID} side={selected.outcome} />
             </div>
             <GridConfigForm
