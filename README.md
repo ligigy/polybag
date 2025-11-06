@@ -46,7 +46,7 @@ NEXT_PUBLIC_WS_URL=wss://ws-subscriptions-clob.polymarket.com
 pnpm dev
 ```
 
-打开 [http://localhost:3000/grid](http://localhost:3000/grid)
+打开 [http://localhost:3000](http://localhost:3000)
 
 #### 4. 钱包连接
 
@@ -57,7 +57,7 @@ pnpm dev
 
 ### 演示路径（Grid E2E）
 
-1. 打开 [http://localhost:3000/grid](http://localhost:3000/grid)
+1. 打开 [http://localhost:3000](http://localhost:3000)
 2. 在“事件查询”中输入 Polymarket 事件 slug（例如 `will-trump-win-2024`），点击“查询”
 3. 在市场列表中选择 YES/NO 方向，确认订单簿实时数据正常刷新
 4. 调整网格配置区间、步长、预算等参数，查看实时计算的层数与预算占比
@@ -70,9 +70,9 @@ pnpm dev
 polybag/
 ├── src/
 │   ├── app/                      # Next.js App Router
-│   │   ├── grid/                 # 网格交易主页面
 │   │   ├── api/                  # App Routes (API endpoints)
-│   │   └── components/           # React 组件
+│   │   ├── components/           # 页面级组件
+│   │   └── page.tsx              # 网格交易主页面
 │   ├── lib/                      # 工具库
 │   │   ├── grid/                 # 网格引擎
 │   │   ├── persistence/          # 状态持久化

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { Header } from "@/components/layout/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,11 +19,6 @@ export const metadata: Metadata = {
   description: "Polybag 网格交易控制面板",
 };
 
-const navLinks = [
-  { href: "/", label: "Dashboard" },
-  { href: "/grid", label: "Grid 策略" },
-];
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,24 +31,7 @@ export default function RootLayout({
       >
         <Providers>
           <div className="min-h-screen flex flex-col">
-            <header className="border-b bg-white/70 backdrop-blur-sm">
-              <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
-                <Link href="/" className="font-semibold tracking-tight">
-                  Poly Grid Bot
-                </Link>
-                <nav className="flex gap-4 text-sm font-medium text-zinc-600">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="transition-colors hover:text-zinc-900"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </nav>
-              </div>
-            </header>
+            <Header />
             <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
               {children}
             </main>

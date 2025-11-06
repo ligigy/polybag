@@ -23,7 +23,7 @@ export default function HomeDashboard() {
         <CardContent>
           <div className="flex gap-3">
             <Button asChild variant="outline">
-              <Link href="/grid">进入网格策略</Link>
+              <Link href="/">打开网格策略</Link>
             </Button>
           </div>
         </CardContent>

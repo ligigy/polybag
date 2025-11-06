@@ -1,12 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import WalletConnectButton from '@/app/components/WalletConnectButton';
 
-const navLinks = [
-  { href: '/', label: 'Dashboard' },
-  { href: '/grid', label: 'Grid 策略' },
-];
+const navLinks = [{ href: '/', label: '' }];
 
 export function Header() {
   return (
@@ -16,7 +13,7 @@ export function Header() {
           href="/"
           className="font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 hover:opacity-80 transition-opacity"
         >
-          Poly Grid Bot
+          Polymarket 网格交易平台
         </Link>
         <nav className="flex items-center gap-4">
           <div className="flex gap-4 text-sm font-medium text-zinc-600 dark:text-zinc-400">
@@ -30,7 +27,7 @@ export function Header() {
               </Link>
             ))}
           </div>
-          <ThemeToggle />
+          <WalletConnectButton />
         </nav>
       </div>
     </header>
