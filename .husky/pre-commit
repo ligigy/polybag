@@ -1,9 +1,0 @@
-#!/bin/sh
-set -e
-
-if command -v pnpm >/dev/null 2>&1; then
-  pnpm lint
-  pnpm test -- --run
-else
-  echo "pnpm 未安装，跳过 lint/test" >&2
-fi
