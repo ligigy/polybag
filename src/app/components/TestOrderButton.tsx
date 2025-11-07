@@ -46,7 +46,7 @@ export default function TestOrderButton({ tokenID, side }: { tokenID: string; si
       const client = new ClobClient(apiUrl, chain, signer, creds);
 
       // 再次检查授权状态
-      const currentStatus = await checkAllowanceStatus(client, tokenID, amount);
+      const currentStatus = await checkAllowanceStatus(signer, chain);
       if (currentStatus.needsApproval) {
         notify('授权状态已过期，请重新授权');
         setAllowanceStatus(currentStatus);
@@ -113,11 +113,7 @@ export default function TestOrderButton({ tokenID, side }: { tokenID: string; si
       {showApproval && (
         <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
           <h3 className="text-sm font-semibold mb-3">授权状态</h3>
-          <ApprovalStatus
-            tokenID={tokenID}
-            requiredAmount={amount}
-            onStatusChange={handleStatusChange}
-          />
+          <ApprovalStatus onStatusChange={handleStatusChange} />
         </div>
       )}
     </div>

@@ -1,17 +1,11 @@
-import PolymarketClobAdapter, {
-  AdapterInitConfig,
-} from "@/services/polymarket/clob-adapter";
+import PolymarketClobAdapter, { AdapterInitConfig } from '@/services/polymarket/clob-adapter';
 import PolymarketWSClient, {
   UserSubscription,
   WsClientOptions,
   WsMessage,
   WsStatus,
-} from "@/services/polymarket/ws-client";
-import {
-  Balance,
-  Order,
-  TradeEvent,
-} from "@/services/polymarket/types";
+} from '@/services/polymarket/ws-client';
+import { Balance, Order, TradeEvent } from '@/services/polymarket/types';
 
 export interface AccountSnapshot {
   address?: string;
@@ -22,13 +16,13 @@ export interface AccountSnapshot {
 }
 
 export type AccountStreamEvent =
-  | { type: "snapshot"; snapshot: AccountSnapshot }
-  | { type: "balance"; balance: Balance; ts: number }
-  | { type: "order"; order: Order; ts: number }
-  | { type: "order-removed"; order: Order; ts: number }
-  | { type: "trade"; trade: TradeEvent; ts: number }
-  | { type: "raw"; payload: WsMessage; ts: number }
-  | { type: "error"; error: string; ts: number };
+  | { type: 'snapshot'; snapshot: AccountSnapshot }
+  | { type: 'balance'; balance: Balance; ts: number }
+  | { type: 'order'; order: Order; ts: number }
+  | { type: 'order-removed'; order: Order; ts: number }
+  | { type: 'trade'; trade: TradeEvent; ts: number }
+  | { type: 'raw'; payload: WsMessage; ts: number }
+  | { type: 'error'; error: string; ts: number };
 
 export interface AccountStream {
   close: () => Promise<void>;
@@ -63,11 +57,9 @@ export interface AccountHealth {
 export class AccountService {
   constructor() {}
 
-  async getSnapshot(
-    address?: string,
-    config?: AdapterInitConfig
-  ): Promise<AccountSnapshot> {
+  async getSnapshot(address?: string, config?: AdapterInitConfig): Promise<AccountSnapshot> {
     const adapter = await this.createAdapter(config);
+    console.log('adapter', adapter);
     return this.collectSnapshot(adapter, address);
   }
 
@@ -76,8 +68,7 @@ export class AccountService {
       ...options.adapterConfig,
       apiKey: options.credentials?.apiKey ?? options.adapterConfig?.apiKey,
       secret: options.credentials?.secret ?? options.adapterConfig?.secret,
-      passphrase:
-        options.credentials?.passphrase ?? options.adapterConfig?.passphrase,
+      passphrase: options.credentials?.passphrase ?? options.adapterConfig?.passphrase,
     });
 
     const listeners = new Set<(event: AccountStreamEvent) => void>();
@@ -86,8 +77,8 @@ export class AccountService {
     };
 
     const snapshot = await this.collectSnapshot(adapter, options.address);
-    emit({ type: "snapshot", snapshot });
-    emit({ type: "balance", balance: snapshot.balance, ts: snapshot.lastUpdated });
+    emit({ type: 'snapshot', snapshot });
+    emit({ type: 'balance', balance: snapshot.balance, ts: snapshot.lastUpdated });
 
     let lastBalance = snapshot.balance;
     let lastOrders = new Map(snapshot.openOrders.map((o) => [o.id, o]));
@@ -106,19 +97,19 @@ export class AccountService {
 
           if (!this.balanceEqual(lastBalance, next.balance)) {
             lastBalance = next.balance;
-            emit({ type: "balance", balance: next.balance, ts: now });
+            emit({ type: 'balance', balance: next.balance, ts: now });
           }
 
           const nextOrders = new Map(next.openOrders.map((o) => [o.id, o]));
           for (const order of next.openOrders) {
             const prev = lastOrders.get(order.id);
             if (!prev || !this.orderEqual(prev, order)) {
-              emit({ type: "order", order, ts: now });
+              emit({ type: 'order', order, ts: now });
             }
           }
           for (const [id, prev] of lastOrders.entries()) {
             if (!nextOrders.has(id)) {
-              emit({ type: "order-removed", order: prev, ts: now });
+              emit({ type: 'order-removed', order: prev, ts: now });
             }
           }
           lastOrders = nextOrders;
@@ -127,32 +118,32 @@ export class AccountService {
             const key = trade.tradeId || `${trade.orderId}-${trade.ts}-${trade.size}`;
             if (!seenTrades.has(key)) {
               seenTrades.add(key);
-              emit({ type: "trade", trade, ts: now });
+              emit({ type: 'trade', trade, ts: now });
             }
           }
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : String(err);
-          emit({ type: "error", error: message, ts: Date.now() });
+          emit({ type: 'error', error: message, ts: Date.now() });
         }
       }, pollInterval);
     }
 
     let wsClient: PolymarketWSClient | null = null;
-    let wsStatus: WsStatus = "idle";
+    let wsStatus: WsStatus = 'idle';
     let lastEventTs: number | undefined = undefined;
 
     if (options.credentials) {
       const cfg = adapter.getConfig();
-      const wsUrl = cfg.wsUrl.endsWith("/user") ? cfg.wsUrl : `${cfg.wsUrl}/user`;
+      const wsUrl = cfg.wsUrl.endsWith('/user') ? cfg.wsUrl : `${cfg.wsUrl}/user`;
       const wsOptions: WsClientOptions = {
         url: wsUrl,
         autoReconnect: true,
         onMessage: (msg) => {
           lastEventTs = Date.now();
-          emit({ type: "raw", payload: msg, ts: lastEventTs });
+          emit({ type: 'raw', payload: msg, ts: lastEventTs });
         },
         onError: (err) => {
-          emit({ type: "error", error: String(err), ts: Date.now() });
+          emit({ type: 'error', error: String(err), ts: Date.now() });
         },
         onStatusChange: (status) => {
           wsStatus = status;
@@ -171,10 +162,10 @@ export class AccountService {
           assets_ids: options.assetsIds ?? [],
           initial_dump: true,
         };
-        await wsClient.subscribe("user", subscription);
+        await wsClient.subscribe('user', subscription);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
-        emit({ type: "error", error: message, ts: Date.now() });
+        emit({ type: 'error', error: message, ts: Date.now() });
       }
     }
 
@@ -200,9 +191,7 @@ export class AccountService {
     };
   }
 
-  async getAccountHealth(
-    options: WatchAccountOptions = {}
-  ): Promise<AccountHealth> {
+  async getAccountHealth(options: WatchAccountOptions = {}): Promise<AccountHealth> {
     const notes: string[] = [];
     let balance: Balance | undefined;
     let apiKeyValid: boolean | null = null;
@@ -212,8 +201,7 @@ export class AccountService {
         ...options.adapterConfig,
         apiKey: options.credentials?.apiKey ?? options.adapterConfig?.apiKey,
         secret: options.credentials?.secret ?? options.adapterConfig?.secret,
-        passphrase:
-          options.credentials?.passphrase ?? options.adapterConfig?.passphrase,
+        passphrase: options.credentials?.passphrase ?? options.adapterConfig?.passphrase,
       });
       const snapshot = await this.collectSnapshot(adapter, options.address);
       balance = snapshot.balance;
@@ -225,7 +213,7 @@ export class AccountService {
     }
 
     let wsConnected: boolean | null = null;
-    let wsStatus: WsStatus = "idle";
+    let wsStatus: WsStatus = 'idle';
 
     if (options.credentials) {
       try {
@@ -237,14 +225,14 @@ export class AccountService {
         });
         const cfg = adapter.getConfig();
         const client = new PolymarketWSClient({
-          url: cfg.wsUrl.endsWith("/user") ? cfg.wsUrl : `${cfg.wsUrl}/user`,
+          url: cfg.wsUrl.endsWith('/user') ? cfg.wsUrl : `${cfg.wsUrl}/user`,
           autoReconnect: false,
           onStatusChange: (status) => {
             wsStatus = status;
           },
         });
         await client.connect();
-        await client.subscribe("user", {
+        await client.subscribe('user', {
           auth: {
             apiKey: options.credentials.apiKey,
             secret: options.credentials.secret,
@@ -273,9 +261,7 @@ export class AccountService {
     };
   }
 
-  private async createAdapter(
-    config?: AdapterInitConfig
-  ): Promise<PolymarketClobAdapter> {
+  private async createAdapter(config?: AdapterInitConfig): Promise<PolymarketClobAdapter> {
     const adapter = new PolymarketClobAdapter();
     await adapter.init(config);
     return adapter;
@@ -289,10 +275,7 @@ export class AccountService {
       const [balance, openOrders, recentTrades] = await Promise.all([
         adapter.getBalance(),
         adapter.getOpenOrders({}),
-        adapter.getTrades(
-          address ? { maker_address: address } : {},
-          true
-        ),
+        adapter.getTrades(address ? { maker_address: address } : {}, true),
       ]);
       return {
         address,
@@ -302,6 +285,7 @@ export class AccountService {
         lastUpdated: Date.now(),
       };
     } catch (err) {
+      console.log('Error collecting account snapshot:', err);
       return {
         address,
         balance: { usdc: 0 },
@@ -323,10 +307,7 @@ export class AccountService {
 
   private orderEqual(a: Order, b: Order) {
     return (
-      a.status === b.status &&
-      a.filled === b.filled &&
-      a.price === b.price &&
-      a.size === b.size
+      a.status === b.status && a.filled === b.filled && a.price === b.price && a.size === b.size
     );
   }
 }

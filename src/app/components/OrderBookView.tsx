@@ -40,12 +40,12 @@ export default function OrderBookView({ tokenID }: { tokenID: string }) {
         autoReconnect: true,
         onMessage: (msg) => {
           if (closed) return;
-          console.log('msg', msg);
+          // console.log('msg', msg);
 
           // 先尝试作为完整订单簿快照处理
           const fullBook = normalizeWsMarketToOrderBook(tokenID, msg);
           if (fullBook) {
-            console.log('Full book snapshot:', fullBook);
+            // console.log('Full book snapshot:', fullBook);
             setOrderbook(fullBook);
             setLoading(false);
             setError(null);
@@ -56,7 +56,7 @@ export default function OrderBookView({ tokenID }: { tokenID: string }) {
           setOrderbook((currentBook) => {
             const updatedBook = applyPriceChanges(currentBook, tokenID, msg);
             if (updatedBook && updatedBook !== currentBook) {
-              console.log('Applied price changes:', updatedBook);
+              // console.log('Applied price changes:', updatedBook);
               setError(null);
             }
             return updatedBook;

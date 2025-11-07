@@ -3,7 +3,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { getStoredApiKey } from '@/lib/storage/apiKeyStore';
 import { ensureTypedDataCompatibility } from '@/lib/wallet/signTypedData';
 import {
   checkAllowanceStatus,
@@ -13,16 +12,10 @@ import {
 } from '@/services/polymarket/allowance';
 
 interface ApprovalStatusProps {
-  tokenID: string;
-  requiredAmount: number;
   onStatusChange?: (status: AllowanceStatus | null) => void;
 }
 
-export default function ApprovalStatus({
-  tokenID,
-  requiredAmount,
-  onStatusChange,
-}: ApprovalStatusProps) {
+export default function ApprovalStatus({ onStatusChange }: ApprovalStatusProps) {
   const { notify } = useToast();
   const [status, setStatus] = React.useState<AllowanceStatus | null>(null);
   const [checking, setChecking] = React.useState(false);
@@ -38,12 +31,6 @@ export default function ApprovalStatus({
   const checkStatus = React.useCallback(async () => {
     setChecking(true);
     try {
-      const creds = getStoredApiKey();
-      if (!creds) throw new Error('未找到会话 API Key');
-
-      const apiUrl = process.env.NEXT_PUBLIC_CLOB_API_URL || 'https://clob.polymarket.com';
-      const chain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
-      const { ClobClient } = await import('@polymarket/clob-client');
       const { BrowserProvider } = await import('ethers');
 
       const eth: any = (window as any).ethereum;
@@ -53,8 +40,8 @@ export default function ApprovalStatus({
       const signerV6 = await provider.getSigner();
       const signer: any = ensureTypedDataCompatibility(signerV6 as any);
 
-      const client = new ClobClient(apiUrl, chain, signer, creds);
-      const allowanceStatus = await checkAllowanceStatus(client, tokenID, requiredAmount);
+      const chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
+      const allowanceStatus = await checkAllowanceStatus(signer, chainId);
 
       setStatus(allowanceStatus);
       onStatusChangeRef.current?.(allowanceStatus);
@@ -66,18 +53,12 @@ export default function ApprovalStatus({
     } finally {
       setChecking(false);
     }
-  }, [tokenID, requiredAmount, notify]);
+  }, [notify]);
 
   // 执行授权
   const handleApprove = async () => {
     setApproving(true);
     try {
-      const creds = getStoredApiKey();
-      if (!creds) throw new Error('未找到会话 API Key');
-
-      const apiUrl = process.env.NEXT_PUBLIC_CLOB_API_URL || 'https://clob.polymarket.com';
-      const chain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
-      const { ClobClient } = await import('@polymarket/clob-client');
       const { BrowserProvider } = await import('ethers');
 
       const eth: any = (window as any).ethereum;
@@ -87,11 +68,11 @@ export default function ApprovalStatus({
       const signerV6 = await provider.getSigner();
       const signer: any = ensureTypedDataCompatibility(signerV6 as any);
 
-      const client = new ClobClient(apiUrl, chain, signer, creds);
-      const result = await approveAllowances(client);
+      const chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
+      const result = await approveAllowances(signer, chainId);
 
       if (result.success) {
-        notify('授权成功！请等待交易确认...');
+        notify(`授权成功！已完成 ${result.txHashes?.length || 0} 个交易，请等待确认...`);
         // 等待几秒后重新检查状态
         setTimeout(() => {
           checkStatus();
@@ -131,36 +112,51 @@ export default function ApprovalStatus({
     );
   }
 
-  const { hasUsdcAllowance, hasTokenAllowance, usdcBalance, tokenBalance, needsApproval } = status;
+  const {
+    hasUsdcCtfAllowance,
+    hasUsdcExchangeAllowance,
+    hasCtfExchangeAllowance,
+    usdcBalance,
+    needsApproval,
+  } = status;
 
   return (
     <div className="space-y-2">
       {/* 余额信息 */}
       <div className="text-xs text-zinc-600 space-y-1">
         <div>USDC 余额: ${formatBalance(usdcBalance)}</div>
-        <div>Token 余额: {formatBalance(tokenBalance)}</div>
       </div>
 
       {/* 授权状态 */}
       <div className="space-y-1">
         <div className="flex items-center gap-2 text-xs">
-          {hasUsdcAllowance ? (
+          {hasUsdcCtfAllowance ? (
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           ) : (
             <AlertCircle className="h-4 w-4 text-amber-500" />
           )}
-          <span className={hasUsdcAllowance ? 'text-green-600' : 'text-amber-600'}>
-            USDC 授权{hasUsdcAllowance ? '已完成' : '待授权'}
+          <span className={hasUsdcCtfAllowance ? 'text-green-600' : 'text-amber-600'}>
+            USDC → CTF {hasUsdcCtfAllowance ? '已授权' : '待授权'}
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs">
-          {hasTokenAllowance ? (
+          {hasUsdcExchangeAllowance ? (
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           ) : (
             <AlertCircle className="h-4 w-4 text-amber-500" />
           )}
-          <span className={hasTokenAllowance ? 'text-green-600' : 'text-amber-600'}>
-            Token 授权{hasTokenAllowance ? '已完成' : '待授权'}
+          <span className={hasUsdcExchangeAllowance ? 'text-green-600' : 'text-amber-600'}>
+            USDC → Exchange {hasUsdcExchangeAllowance ? '已授权' : '待授权'}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
+          {hasCtfExchangeAllowance ? (
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          ) : (
+            <AlertCircle className="h-4 w-4 text-amber-500" />
+          )}
+          <span className={hasCtfExchangeAllowance ? 'text-green-600' : 'text-amber-600'}>
+            CTF → Exchange {hasCtfExchangeAllowance ? '已授权' : '待授权'}
           </span>
         </div>
       </div>
@@ -174,7 +170,7 @@ export default function ApprovalStatus({
               授权中...
             </>
           ) : (
-            '授权 USDC 和 Tokens'
+            '执行授权'
           )}
         </Button>
       )}
