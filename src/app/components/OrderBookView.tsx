@@ -15,10 +15,21 @@ type OrderBook = {
   spread?: number;
 };
 
-export default function OrderBookView({ tokenID }: { tokenID: string }) {
+export default function OrderBookView({
+  tokenID,
+  onOrderBookUpdate,
+}: {
+  tokenID: string;
+  onOrderBookUpdate?: (orderbook: OrderBook | null) => void;
+}) {
   const [orderbook, setOrderbook] = React.useState<OrderBook | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
+
+  // 当 orderbook 更新时，通知父组件
+  React.useEffect(() => {
+    onOrderBookUpdate?.(orderbook);
+  }, [orderbook, onOrderBookUpdate]);
 
   React.useEffect(() => {
     let client: PolymarketWSClient | null = null;

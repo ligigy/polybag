@@ -22,7 +22,7 @@ import {
 import ApiKeyManager from '@/app/components/ApiKeyManager';
 
 // 你的 Polymarket Proxy 钱包地址
-const PROXY_WALLET_ADDRESS = '0xd1A720882b518c7899828580D38ece53382758A9';
+export const PROXY_WALLET_ADDRESS = '0xd1A720882b518c7899828580D38ece53382758A9';
 
 function useApiKeyPresence() {
   const [hasKey, setHasKey] = React.useState<boolean>(false);
@@ -52,16 +52,16 @@ export default function AccountAllowanceBlock() {
       }
 
       // 获取前端钱包 signer
-      const { BrowserProvider } = await import('ethers');
+      const { providers } = await import('ethers');
       const eth: any = (window as any).ethereum;
       if (!eth) {
         throw new Error('未检测到浏览器钱包');
       }
 
-      const provider = new BrowserProvider(eth);
-      const signerV6 = await provider.getSigner();
-      console.log('signerV6', signerV6);
-      const signer = ensureTypedDataCompatibility(signerV6 as any);
+      const provider = new providers.Web3Provider(eth);
+      const signerV5 = provider.getSigner();
+      console.log('signerV5', signerV5);
+      const signer = ensureTypedDataCompatibility(signerV5 as any);
 
       // 转换为 ApiCredentials 格式
       const apiCredentials = {

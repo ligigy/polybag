@@ -49,14 +49,12 @@ export default function ApiKeyManager() {
       const chain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
       // dynamic import to keep SSR clean
       const { ClobClient } = await import('@polymarket/clob-client');
-      const { BrowserProvider } = await import('ethers');
+      const { providers } = await import('ethers');
       const eth: any = (window as any).ethereum;
       if (!eth) throw new Error('未检测到浏览器钱包');
-      const provider = new BrowserProvider(eth);
-      const signerV6 = await provider.getSigner();
-      // ethers v6 没有 _signTypedData，clob-client 期望 v5 接口；做一层适配
-      const signer: any = ensureTypedDataCompatibility(signerV6 as any);
-      const client = new ClobClient(apiUrl, chain, signer);
+      const provider = new providers.Web3Provider(eth);
+      const signerV5 = provider.getSigner();
+      const client = new ClobClient(apiUrl, chain, signerV5);
       const resp = await client.createOrDeriveApiKey();
       if (!resp?.key || !resp?.secret || !resp?.passphrase) throw new Error('派生失败');
       const newCreds = {
@@ -83,12 +81,12 @@ export default function ApiKeyManager() {
       const chain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
       if (!creds) throw new Error('请先派生 API Key');
       const { ClobClient } = await import('@polymarket/clob-client');
-      const { BrowserProvider } = await import('ethers');
+      const { providers } = await import('ethers');
       const eth: any = (window as any).ethereum;
       if (!eth) throw new Error('未检测到浏览器钱包');
-      const provider = new BrowserProvider(eth);
-      const signerV6 = await provider.getSigner();
-      const signer: any = ensureTypedDataCompatibility(signerV6 as any);
+      const provider = new providers.Web3Provider(eth);
+      const signerV5 = provider.getSigner();
+      const signer: any = ensureTypedDataCompatibility(signerV5 as any);
       const client = new ClobClient(apiUrl, chain, signer, creds);
       const resp = await client.getApiKeys();
       setKeysList(resp?.data || resp || []);
@@ -109,11 +107,11 @@ export default function ApiKeyManager() {
       const apiUrl = process.env.NEXT_PUBLIC_CLOB_API_URL || 'https://clob.polymarket.com';
       const chain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
       const { ClobClient } = await import('@polymarket/clob-client');
-      const { BrowserProvider } = await import('ethers');
+      const { providers } = await import('ethers');
       const eth: any = (window as any).ethereum;
-      const provider = new BrowserProvider(eth);
-      const signerV6 = await provider.getSigner();
-      const signer: any = ensureTypedDataCompatibility(signerV6 as any);
+      const provider = new providers.Web3Provider(eth);
+      const signerV5 = provider.getSigner();
+      const signer: any = ensureTypedDataCompatibility(signerV5 as any);
       const client = new ClobClient(apiUrl, chain, signer, creds);
       await client.deleteApiKey();
       // clear local
@@ -137,11 +135,11 @@ export default function ApiKeyManager() {
       const chain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
       if (!creds) throw new Error('请先派生 API Key');
       const { ClobClient } = await import('@polymarket/clob-client');
-      const { BrowserProvider } = await import('ethers');
+      const { providers } = await import('ethers');
       const eth: any = (window as any).ethereum;
-      const provider = new BrowserProvider(eth);
-      const signerV6 = await provider.getSigner();
-      const signer: any = ensureTypedDataCompatibility(signerV6 as any);
+      const provider = new providers.Web3Provider(eth);
+      const signerV5 = provider.getSigner();
+      const signer: any = ensureTypedDataCompatibility(signerV5 as any);
       const client = new ClobClient(apiUrl, chain, signer, creds);
       const resp = await client.getBuilderApiKeys?.();
       setKeysList(resp?.data || resp || []);
@@ -159,14 +157,14 @@ export default function ApiKeyManager() {
     setError(null);
     try {
       if (!creds) throw new Error('请先派生 API Key');
-      const apiUrl = process.env.NEXT_PUBLIC_CLOB_API_URL || '';
+      const apiUrl = process.env.NEXT_PUBLIC_CLOB_API_URL || 'https://clob.polymarket.com';
       const chain = Number(process.env.NEXT_PUBLIC_CHAIN_ID || process.env.CHAIN_ID || 137);
       const { ClobClient } = await import('@polymarket/clob-client');
-      const { BrowserProvider } = await import('ethers');
+      const { providers } = await import('ethers');
       const eth: any = (window as any).ethereum;
-      const provider = new BrowserProvider(eth);
-      const signerV6 = await provider.getSigner();
-      const signer: any = ensureTypedDataCompatibility(signerV6 as any);
+      const provider = new providers.Web3Provider(eth);
+      const signerV5 = provider.getSigner();
+      const signer: any = ensureTypedDataCompatibility(signerV5 as any);
       const client = new ClobClient(apiUrl, chain, signer, creds);
       await client.revokeBuilderApiKeys?.();
       setKeysList(null);

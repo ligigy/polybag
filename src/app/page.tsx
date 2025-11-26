@@ -18,6 +18,16 @@ import AccountAllowanceBlock from '@/app/components/AccountAllowanceBlock';
 
 type Outcome = 'YES' | 'NO';
 
+type OrderBookLevel = { price: number; size: number; count?: number };
+type OrderBookData = {
+  marketId: string;
+  bids: OrderBookLevel[];
+  asks: OrderBookLevel[];
+  ts: number;
+  mid?: number;
+  spread?: number;
+} | null;
+
 interface QueryState {
   slug?: string | null;
   marketId?: string | null;
@@ -65,6 +75,9 @@ export default function Home() {
     outcome: Outcome;
   }>({ market: null, outcome: 'YES' });
   const [loadingEvent, setLoadingEvent] = React.useState(false);
+
+  // 添加 orderbook 状态
+  const [orderbook, setOrderbook] = React.useState<OrderBookData>(null);
 
   const tokenID = selected.market
     ? selected.outcome === 'YES'
@@ -224,7 +237,7 @@ export default function Home() {
           />
         </div>
         <div className="space-y-4">
-          <OrderBookView tokenID={tokenID} />
+          <OrderBookView tokenID={tokenID} onOrderBookUpdate={setOrderbook} />
         </div>
       </div>
 
@@ -236,7 +249,7 @@ export default function Home() {
                 当前市场：{selected.market.question} ({selected.outcome})
               </span>
               <span>下单额: {selected.market.tickSize ?? '-'}</span>
-              <TestOrderButton tokenID={tokenID} side={selected.outcome} />
+              <TestOrderButton tokenID={tokenID} side={selected.outcome} orderbook={orderbook} />
             </div>
             <GridConfigForm
               marketId={selected.market.id}

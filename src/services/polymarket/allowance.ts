@@ -1,6 +1,8 @@
 // Polymarket 授权管理服务
 // 处理 USDC 和 Conditional Tokens 的授权检查和设置
-import { Contract, MaxUint256 } from 'ethers';
+import { Contract, constants } from 'ethers';
+
+const { MaxUint256 } = constants;
 
 export interface AllowanceStatus {
   hasUsdcCtfAllowance: boolean;
